@@ -1,9 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Agbalumo&display=swap');
+
 body {
   font-family: Arial, sans-serif;
 }
 
 .navbar {
   margin-bottom: 20px;
+}
+
+.text-center{
+  font-family: 'Agbalumo';
+  color: #ff9900cb;
+  font-weight: 600;
+}
+
+.navbar-brand{
+  font-family: 'Agbalumo';
+  color: #ffffffcb;
+  font-weight: 600;
 }
 
 .food-item {
@@ -18,4 +32,8 @@ body {
 
 .food-item .card {
   height: 100%;
+}
+
+.nav-link{
+  font-family: Arial, Helvetica, sans-serif;
 }
