@@ -2,6 +2,16 @@
 
 body {
   font-family: Arial, sans-serif;
+  background-image: url('../images/bgimage.jpg');
+}
+
+.navbar{
+  border-bottom-left-radius: 15px;
+}
+
+.form-control{
+  border-radius: 19px;
+  background-color: #daba5498;
 }
 
 .nav-item{
@@ -9,20 +19,34 @@ body {
   font-weight: 100;
 }
 
+.btn{
+  font-family: 'Agbalumo';
+  background-color: chocolate;
+  border: none;
+  transition: 0.4s;
+}
+
+.btn:hover{
+  background-color: rgb(192, 89, 16);
+
+}
+
 .text-center{
   font-family: 'Agbalumo';
-  color: #ff9900cb;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .form-container {
-  background-color: #f8f9fa;
   padding: 2rem;
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: opacity 0.5s ease, transform 0.5s ease;
   max-width: 400px;
   margin: auto;
+  backdrop-filter: blur(5px);
+  border-bottom: 2px solid rgba(245, 208, 44, 0.911);
+  box-shadow: 5px 5px 10px rgba(235, 226, 105, 0.267);
 }
 
 
@@ -48,9 +72,9 @@ body {
 
 .nav-link{
   font-family: 'Agbalumo';
+  color: white;
 }
 
-/* Fade-out animation */
 .fade-out {
   opacity: 0;
   transform: translateX(-30px);
