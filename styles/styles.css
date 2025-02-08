@@ -3,6 +3,8 @@
 body {
   font-family: Arial, sans-serif;
   background-image: url('../images/bgimage.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .navbar{
@@ -54,6 +56,7 @@ body {
   font-family: 'Agbalumo';
   color: #ffffffcb;
   font-weight: 600;
+  transform: 0.4s;
 }
 
 .food-item {
