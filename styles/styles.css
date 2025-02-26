@@ -1,0 +1,32 @@
+.floating-cart {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.floating-cart h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.floating-cart .list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.carousel-item img {
+    height: 300px;
+    object-fit: cover;
+}
