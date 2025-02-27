@@ -1,32 +1,251 @@
-.floating-cart {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 300px;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    padding: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #ffe6cc;
+    color: #333;
+    line-height: 1.6;
 }
 
-.floating-cart h3 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-}
-
-.floating-cart .list-group-item {
+header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 20px 40px;
+    background-color: #fff5e6;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
 }
 
-.card img {
-    height: 200px;
-    object-fit: cover;
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f4a261;
+    padding-left: 15px;
 }
 
-.carousel-item img {
+.logo span {
+    color: #e76f51;
+}
+
+nav {
+    padding-right: 15px;
+}
+
+nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #666;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #e76f51;
+}
+
+.hero {
+    text-align: center;
+    padding: 120px 20px 40px;
+    position: relative;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.hero h1 span {
+    color: #e76f51;
+    font-style: italic;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+.hero-image {
+    width: 300px;
     height: 300px;
     object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 30px;
+}
+
+.buttons .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: #f4a261;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: background-color 0.3s;
+}
+
+.buttons .btn:hover {
+    background-color: #e76f51;
+}
+
+.buttons .btn span {
+    color: #fff5e6;
+    font-weight: bold;
+}
+
+.top-list, .best-potatoes, .services {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.top-list h2, .best-potatoes h2, .services h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.top-list h2 span, .best-potatoes h2 span, .services h2 span {
+    color: #e76f51;
+    font-style: italic;
+}
+
+.slider-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.slider {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.slide {
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    text-align: center;
+}
+
+.slide img {
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.slide h3 {
+    font-size: 1.2rem;
+    margin: 10px 0;
+    color: #333;
+}
+
+.slide p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 5px 0 15px;
+}
+
+.slide p span {
+    color: #e76f51;
+}
+
+.slide button {
+    background-color: #f4a261;
+    border: none;
+    padding: 8px 15px;
+    color: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.slide button:hover {
+    background-color: #e76f51;
+}
+
+.slide button span {
+    color: #fff5e6;
+}
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #f4a261;
+    border: none;
+    color: #fff;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    border-radius: 50%;
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}
+
+.best-potatoes img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    margin: 20px 0;
+}
+
+.best-potatoes p {
+    max-width: 600px;
+    margin: 0 auto;
+    color: #666;
+}
+
+.best-potatoes p span {
+    color: #e76f51;
+    font-weight: bold;
+}
+
+.services .service-items {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.service-item {
+    background-color: #fff;
+    padding: 15px 25px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.service-item span {
+    color: #e76f51;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+    .hero-image, .best-potatoes img {
+        width: 200px;
+        height: 200px;
+    }
+    .slide img {
+        width: 200px;
+        height: 200px;
+    }
 }

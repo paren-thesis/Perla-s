@@ -1,65 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteen Ordering - Home</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Perla's</title>
     <link rel="stylesheet" href="styles/styles.css">
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">Canteen</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="menu.html">Menu</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <header>
+        <div class="logo">Perla<span>'s</span></div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="menu.html">Menu</a>
+            <a href="#">About</a>
+        </nav>
+    </header>
 
-    <!-- Main Content -->
-    <div class="container my-5">
-        <h1 class="text-center mb-4 animate__animated animate__fadeIn">Welcome to Our Canteen</h1>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card animate__animated animate__zoomIn">
-                    <img src="assets/food1.jpg" class="card-img-top" alt="Food 1">
-                    <div class="card-body">
-                        <h5 class="card-title">Delicious Meal</h5>
-                    </div>
-                </div>
+    <main>
+        <section class="hero">
+            <h1>Delicious Food Is <span>Waiting</span> For <span>You</span></h1>
+            <p>Our team of registered nurses and skilled professionals provide in-home nursing</p>
+            <img src="images/image2.png" alt="Featured Dish" class="hero-image">
+            <div class="buttons">
+                <a href="menu.html" class="btn">Food <span>Menu</span></a>
+                <a href="#" class="btn">Book a <span>Table</span></a>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card animate__animated animate__zoomIn" style="animation-delay: 0.2s;">
-                    <img src="assets/food2.jpg" class="card-img-top" alt="Food 2">
-                    <div class="card-body">
-                        <h5 class="card-title">Tasty Snack</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card animate__animated animate__zoomIn" style="animation-delay: 0.4s;">
-                    <img src="assets/food3.jpg" class="card-img-top" alt="Food 3">
-                    <div class="card-body">
-                        <h5 class="card-title">Healthy Option</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="text-center">
-            <a href="menu.html" class="btn btn-primary btn-lg">Order Now</a>
-        </div>
-    </div>
+        </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <section class="top-list">
+            <h2>Top <span>List</span><br>Our mainstay <span>menu</span></h2>
+            <div class="slider-container">
+                <div class="slider" id="foodSlider">
+                    <div class="slide">
+                        <img src="images/image2.png" alt="Noodles Three">
+                        <h3 onmouseover="this.style.textDecoration='underline'"
+                            onmouseout="this.style.textDecoration='none'"><span>Spicy</span> Noodles
+                            <span>Three</span><br>Dried shrimp</h3>
+                        <p>$12<span>.50</span></p>
+                        <button onclick="goToMenu()">View <span>Details</span></button>
+                    </div>
+                    <div class="slide">
+                        <img src="images/image4.png" alt="Noodles One">
+                        <h3 onmouseover="this.style.textDecoration='underline'"
+                            onmouseout="this.style.textDecoration='none'">Noodles <span>Spicy</span> Bowl<br>Seafood and
+                            pork in hot pot</h3>
+                        <p>$20<span>.00</span></p>
+                        <button onclick="goToMenu()">View <span>Details</span></button>
+                    </div>
+                    <div class="slide">
+                        <img src="images/image2.png" alt="Noodles Two">
+                        <h3 onmouseover="this.style.textDecoration='underline'"
+                            onmouseout="this.style.textDecoration='none'"><span>Spicy</span> Noodles
+                            <span>Two</span><br>Spicy prawn soup</h3>
+                        <p>$16<span>.50</span></p>
+                        <button onclick="goToMenu()">View <span>Details</span></button>
+                    </div>
+                </div>
+                <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
+                <button class="next" onclick="moveSlide(1)">&#10095;</button>
+            </div>
+        </section>
+
+        <section class="best-potatoes">
+            <h2>Best <span>Potatoes</span> For<br>French <span>Fries</span></h2>
+            <img src="images/image2.png" alt="French Fries" class="potato-image">
+            <p> Russet potatoes are ideal. Since they're dense, they don't contain as much water inside, which allows
+                them to get extra <span>crispy</span>.</p>
+        </section>
+
+        <section class="services">
+            <h2>Our <span>Services</span></h2>
+            <div class="service-items">
+                <div class="service-item"><span>Online</span> Booking</div>
+                <div class="service-item">Catering <span>Service</span></div>
+                <div class="service-item">Membership</div>
+                <div class="service-item">Delivery <span>Service</span></div>
+            </div>
+        </section>
+    </main>
+
     <script src="scripts/script.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-</body>
+
 </html>
