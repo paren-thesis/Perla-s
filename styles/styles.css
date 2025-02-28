@@ -1,4 +1,4 @@
-body {
+/* body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
@@ -246,6 +246,524 @@ nav a:hover {
     }
     .slide img {
         width: 200px;
+        height: 200px;
+    }
+} */
+
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Frank+Ruhl+Libre:wght@300..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Sorts+Mill+Goudy:ital@0;1&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "DM Sans", serif;
+}
+
+body {
+    background: url('../images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: black;
+    line-height: 1.6;
+    position: relative;
+    background-repeat: no-repeat;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(245, 245, 245, 0.8); 
+    backdrop-filter: blur(5px); /* Blur effect for modern browsers */
+    -webkit-backdrop-filter: blur(5px); /* Safari support */
+    z-index: -1;
+}
+
+header {
+    background-color: rgba(230, 144, 16, 0.9); /* Semi-transparent header to show blur slightly */
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(5px); /* Optional: Add blur to header for consistency */
+    -webkit-backdrop-filter: blur(5px);
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1a1918;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: #666;
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+.nav-links li a:hover {
+    color: #1a1918;
+}
+
+.nav-links li img.user-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Hamburger Menu */
+.hamburger {
+    display: none; 
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #1a1918;
+    padding: 0.5rem;
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Hero Section Styling */
+.hero {
+    padding: 100px 20px 50px;
+    text-align: center;
+    background-color: transparent; /* Remove solid background to show blurred effect */
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping for mobile */
+}
+
+.hero-text {
+    width: 50%;
+    margin-right: 6rem;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.buttons {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.food-menu, .book-table {
+    padding: 8px 16px; /* Reduced padding for smaller buttons on mobile */
+    border: none;
+    background-color: #d4a017;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem; /* Slightly smaller font size */
+    transition: background-color 0.3s;
+    width: auto; /* Removed fixed width to allow natural sizing */
+}
+
+.food-menu:hover, .book-table:hover {
+    background-color: #b78c13;
+}
+
+.hero-image {
+    width: 50%;
+    max-width: 400px;
+    margin-top: 2rem;
+    object-fit: cover;
+}
+
+/* Top List and Menu Items */
+.top-list {
+    padding: 50px 20px;
+    text-align: center;
+    background-color: rgba(245, 245, 245, 0.9); /* Semi-transparent background for readability */
+    position: relative;
+}
+
+.top-list::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px); /* Blur effect for this section */
+    -webkit-backdrop-filter: blur(5px);
+    z-index: -1;
+}
+
+.top-list h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.top-list h3 {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.menu-items {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.menu-item {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    width: 250px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.menu-item:hover {
+    transform: translateY(-5px);
+}
+
+.menu-item img {
+    width: 100%;
+    height: 200px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    object-fit: cover;
+}
+
+.menu-item h4 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.menu-item p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.rating {
+    font-size: 1rem;
+    color: #d4a017;
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Potatoes Section */
+.potatoes-section {
+    padding: 50px 20px;
+    text-align: center;
+    background-color: rgba(245, 245, 245, 0.9); /* Semi-transparent background for readability */
+    position: relative;
+}
+
+.potatoes-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px); /* Blur effect for this section */
+    -webkit-backdrop-filter: blur(5px);
+    z-index: -1;
+}
+
+.potatoes-section h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.potatoes-section p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.fries {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+.fries-image {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Footer */
+footer {
+    padding: 50px 20px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent footer */
+    border-top: 1px solid #ddd;
+    position: relative;
+}
+
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px); /* Blur effect for footer */
+    -webkit-backdrop-filter: blur(5px);
+    z-index: -1;
+}
+
+footer h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.services {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.service {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #666;
+    padding: 0.5rem;
+}
+
+.service img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .hero-text {
+        width: 60%;
+        margin-right: 3rem;
+    }
+
+    .hero-image {
+        width: 40%;
+        max-width: 350px;
+    }
+
+    .fries {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .menu-item {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 0.5rem;
+    }
+
+    nav {
+        flex-direction: row; /* Changed to row to keep logo and hamburger side by side */
+        align-items: center;
+    }
+
+    .hamburger {
+        display: block;
+        order: 2; /* Places hamburger after logo in flex order */
+    }
+
+    .logo {
+        order: 1; /* Keeps logo first in flex order */
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background-color: rgba(230, 144, 16, 0.9);
+        padding: 1rem;
+        z-index: 1000;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links li {
+        margin: 0.5rem 0;
+    }
+
+    .nav-links li a {
+        font-size: 1.1rem;
+        color: #1a1918;
+    }
+
+    .hero {
+        padding: 80px 10px 30px;
+        flex-direction: column;
+    }
+
+    .hero-text {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 2rem;
+    }
+
+    .hero-image {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .food-menu, .book-table {
+        width: 100%;
+        padding: 8px 16px; /* Consistent smaller size on mobile */
+        font-size: 0.9rem; /* Smaller font size for mobile */
+    }
+
+    .menu-items {
+        gap: 1rem;
+    }
+
+    .menu-item {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .top-list h2 {
+        font-size: 1.8rem;
+    }
+
+    .top-list h3 {
+        font-size: 1.1rem;
+    }
+
+    .potatoes-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .potatoes-section p {
+        font-size: 1rem;
+    }
+
+    .fries {
+        grid-template-columns: 1fr;
+    }
+
+    .fries-image {
+        max-width: 100%;
+    }
+
+    .services {
+        gap: 1rem;
+    }
+
+    footer h3 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .top-list h2 {
+        font-size: 1.5rem;
+    }
+
+    .top-list h3 {
+        font-size: 1rem;
+    }
+
+    .potatoes-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .potatoes-section p {
+        font-size: 0.9rem;
+    }
+
+    .service {
+        font-size: 0.9rem;
+    }
+
+    .service img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .menu-item {
+        max-width: 250px;
+    }
+
+    .fries-image {
         height: 200px;
     }
 }

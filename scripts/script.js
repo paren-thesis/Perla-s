@@ -29,3 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "menu.html"; // Adjust path if needed
   };
 });
+
+
+
+document.querySelector('.hamburger').addEventListener('click', function() {
+  document.querySelector('.nav-links').classList.toggle('active');
+});
+
