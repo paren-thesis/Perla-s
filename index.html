@@ -1,108 +1,20 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perla's</title>
-    <link rel="stylesheet" href="styles/styles.css">
-</head>
-
-<body>
-    <header>
-        <div class="logo">Perla<span>'s</span></div>
-        <nav>
-            <a href="#">Home</a>
-            <a href="menu.html">Menu</a>
-            <a href="#">About</a>
-        </nav>
-    </header>
-
-    <main>
-        <section class="hero">
-            <h1>Delicious Food Is <span>Waiting</span> For <span>You</span></h1>
-            <p>Our team of registered nurses and skilled professionals provide in-home nursing</p>
-            <img src="images/image2.png" alt="Featured Dish" class="hero-image">
-            <div class="buttons">
-                <a href="menu.html" class="btn">Food <span>Menu</span></a>
-                <a href="#" class="btn">Book a <span>Table</span></a>
-            </div>
-        </section>
-
-        <section class="top-list">
-            <h2>Top <span>List</span><br>Our mainstay <span>menu</span></h2>
-            <div class="slider-container">
-                <div class="slider" id="foodSlider">
-                    <div class="slide">
-                        <img src="images/image2.png" alt="Noodles Three">
-                        <h3 onmouseover="this.style.textDecoration='underline'"
-                            onmouseout="this.style.textDecoration='none'"><span>Spicy</span> Noodles
-                            <span>Three</span><br>Dried shrimp</h3>
-                        <p>$12<span>.50</span></p>
-                        <button onclick="goToMenu()">View <span>Details</span></button>
-                    </div>
-                    <div class="slide">
-                        <img src="images/image4.png" alt="Noodles One">
-                        <h3 onmouseover="this.style.textDecoration='underline'"
-                            onmouseout="this.style.textDecoration='none'">Noodles <span>Spicy</span> Bowl<br>Seafood and
-                            pork in hot pot</h3>
-                        <p>$20<span>.00</span></p>
-                        <button onclick="goToMenu()">View <span>Details</span></button>
-                    </div>
-                    <div class="slide">
-                        <img src="images/image2.png" alt="Noodles Two">
-                        <h3 onmouseover="this.style.textDecoration='underline'"
-                            onmouseout="this.style.textDecoration='none'"><span>Spicy</span> Noodles
-                            <span>Two</span><br>Spicy prawn soup</h3>
-                        <p>$16<span>.50</span></p>
-                        <button onclick="goToMenu()">View <span>Details</span></button>
-                    </div>
-                </div>
-                <button class="prev" onclick="moveSlide(-1)">&#10094;</button>
-                <button class="next" onclick="moveSlide(1)">&#10095;</button>
-            </div>
-        </section>
-
-        <section class="best-potatoes">
-            <h2>Best <span>Potatoes</span> For<br>French <span>Fries</span></h2>
-            <img src="images/image2.png" alt="French Fries" class="potato-image">
-            <p> Russet potatoes are ideal. Since they're dense, they don't contain as much water inside, which allows
-                them to get extra <span>crispy</span>.</p>
-        </section>
-
-        <section class="services">
-            <h2>Our <span>Services</span></h2>
-            <div class="service-items">
-                <div class="service-item"><span>Online</span> Booking</div>
-                <div class="service-item">Catering <span>Service</span></div>
-                <div class="service-item">Membership</div>
-                <div class="service-item">Delivery <span>Service</span></div>
-            </div>
-        </section>
-    </main>
-
-    <script src="scripts/script.js"></script>
-
-</html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOODEAT</title>
+    <title>Perla's</title>
     <link rel="stylesheet" href="./styles/styles.css">
 
 </head>
 <body>
     <header>
         <nav>
-            <div class="logo">Perla's</div>
+            <div class="logo">Perla<span>'s</span></div>
             <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#menu">Menu</a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
                 <li><a href="#about">About</a></li>
-                <!-- <li><img src="user-icon.png" alt="User" class="user-icon"></li> -->
             </ul>
             <img src="./images/hamburger.png" alt="hamburger menu" class="hamburger">
         </nav>
@@ -113,7 +25,7 @@
         <h1>Delicious Food Is Waiting For You</h1>
         <p>Our team of registered nurses and skilled healthcare professionals provide in-home nursing</p>
         <div class="buttons">
-            <button class="food-menu">Food Menu</button>
+            <button class="food-menu"><a href="menu.html">Menu</a></button>
             <button class="book-table">Book a Table</button>
         </div>
         </div>
