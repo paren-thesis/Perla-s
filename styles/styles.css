@@ -252,7 +252,6 @@ nav {
     text-align: center;
     background-color: rgba(245, 245, 245, 0.9); /* Semi-transparent background for readability */
     position: relative;
-    /* margin-top: 25px; */
     min-height: 100vh;
 }
 
