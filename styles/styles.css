@@ -50,6 +50,46 @@ nav {
     padding: 0 1rem;
 }
 
+/* Ensure the dropdown parent is positioned relative */
+.dropdown {
+    position: relative;
+}
+
+/* Dropdown styling */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: crimson;
+    min-width: 150px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    top: 100%;
+    left: 0;
+}
+
+/* Dropdown menu items */
+.dropdown-content li {
+    list-style: none;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Fix: Add missing semicolon */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
 .logo {
     font-size: 1.5rem;
     font-weight: bold;
