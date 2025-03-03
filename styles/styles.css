@@ -166,6 +166,7 @@ nav {
     text-align: center;
     background-color: rgba(245, 245, 245, 0.9); /* Semi-transparent background for readability */
     position: relative;
+    min-height: 100vh;
 }
 
 .top-list::before {
@@ -184,6 +185,7 @@ nav {
     font-size: 2rem;
     color: #333;
     margin-bottom: 1rem;
+    margin-top: 3rem;
 }
 
 .top-list h3 {
@@ -250,6 +252,8 @@ nav {
     text-align: center;
     background-color: rgba(245, 245, 245, 0.9); /* Semi-transparent background for readability */
     position: relative;
+    /* margin-top: 25px; */
+    min-height: 100vh;
 }
 
 .potatoes-section::before {
@@ -268,6 +272,7 @@ nav {
     font-size: 2rem;
     color: #333;
     margin-bottom: 1rem;
+    margin-top: 5rem;
 }
 
 .potatoes-section p {
