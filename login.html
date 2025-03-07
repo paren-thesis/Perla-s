@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Perla's</title>
+    <link rel="stylesheet" href="styles/login.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Perla<span>'s</span></div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Us</a></li>
+            </ul>
+            <img src="./images/hamburger.png" alt="hamburger menu" class="hamburger">
+        </nav>
+    </header>
+
+    <div class="login-container">
+        <h1 class="login-title">Login</h1>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <div class="toggle-password-dot" id="togglePassword"></div>
+                </div>
+            </div>
+            <button type="submit" class="login-button">Login</button>
+            <p class="signup-text">Don't have an account? <a href="#">Sign up</a></p>
+            <p id="error-message" class="error-message"></p>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Perla's. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // JavaScript for login validation
+        document.getElementById("loginForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Get input values
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Hardcoded credentials
+            const validUsername = "User1";
+            const validPassword = "password";
+
+            // Validate credentials
+            if (username === validUsername && password === validPassword) {
+                // Redirect to menu.html
+                window.location.href = "menu.html";
+            } else {
+                // Show error message
+                document.getElementById("error-message").textContent = "Invalid username or password. Please try again.";
+            }
+        });
+
+        // JavaScript for toggling password visibility
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+
+        togglePassword.addEventListener("click", function () {
+            // Toggle the type attribute
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+
+            // Toggle the dot color
+            this.classList.toggle("show");
+        });
+    </script>
+</body>
+
+</html>
