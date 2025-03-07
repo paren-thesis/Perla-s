@@ -10,10 +10,11 @@
 body {
     background: url('../images/background.jpg') no-repeat center center fixed;
     background-size: cover;
-    color: black;
+    color: #333;
     line-height: 1.6;
     position: relative;
     background-repeat: no-repeat;
+    display: list-item;
 }
 
 body::before {
@@ -23,21 +24,21 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(245, 245, 245, 0.8); 
-    backdrop-filter: blur(5px); /* Blur effect for modern browsers */
-    -webkit-backdrop-filter: blur(5px); /* Safari support */
+    background: rgba(245, 245, 245, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     z-index: -1;
 }
 
 header {
-    background-color: rgba(230, 144, 16, 0.9); /* Semi-transparent header to show blur slightly */
+    background-color: rgba(230, 144, 16, 0.9);
     padding: 1rem;
     border-bottom: 1px solid #ddd;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
-    backdrop-filter: blur(5px); /* Optional: Add blur to header for consistency */
+    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 }
 
@@ -84,7 +85,7 @@ nav {
 }
 
 .hamburger {
-    display: none; 
+    display: none;
     font-size: 1.5rem;
     cursor: pointer;
     color: #1a1918;
@@ -96,13 +97,12 @@ nav {
 .menu-container {
     padding: 100px 20px 50px;
     text-align: center;
-    background-color: transparent; /* Remove solid background to show blurred effect */
+    background-color: transparent;
     position: relative;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap; /* Allow wrapping for mobile */
 }
 
 .menu-title {
@@ -222,7 +222,7 @@ nav {
     padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
-    display: none; /* Hidden by default */
+    display: block;
     transition: opacity 0.3s;
 }
 
@@ -283,6 +283,47 @@ nav {
     background-color: #207a6f;
 }
 
+.user-auth {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.user-auth input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.user-auth button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #2a9d8f;
+    color: #fff;
+    cursor: pointer;
+}
+
+.user-auth button:hover {
+    background-color: #207a6f;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 @media (max-width: 1024px) {
     .hero-text {
         width: 60%;
@@ -309,17 +350,17 @@ nav {
     }
 
     nav {
-        flex-direction: row; /* Changed to row to keep logo and hamburger side by side */
+        flex-direction: row;
         align-items: center;
     }
 
     .hamburger {
         display: block;
-        order: 2; /* Places hamburger after logo in flex order */
+        order: 2;
     }
 
     .logo {
-        order: 1; /* Keeps logo first in flex order */
+        order: 1;
     }
 
     .nav-links {
@@ -378,8 +419,8 @@ nav {
 
     .food-menu, .book-table {
         width: 100%;
-        padding: 8px 16px; /* Consistent smaller size on mobile */
-        font-size: 0.9rem; /* Smaller font size for mobile */
+        padding: 8px 16px;
+        font-size: 0.9rem;
     }
 
     .menu-items {

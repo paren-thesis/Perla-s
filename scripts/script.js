@@ -30,9 +30,22 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-
-
 document.querySelector('.hamburger').addEventListener('click', function() {
   document.querySelector('.nav-links').classList.toggle('active');
 });
 
+function bookTable() {
+  let inputEmail = prompt('Enter your name');
+
+  if (inputEmail !== null) {
+    let num = prompt(`${inputEmail} kindly enter the number of people to be seated. 
+You can only book up to 5 people on a table`);
+    if (num !== '' && num > 0 && num <= 5) {
+      alert('Your table has been booked');
+    } else {
+      alert('Invalid input');
+    }
+  } else {
+    alert('Invalid input');
+  }
+}

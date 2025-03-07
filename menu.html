@@ -13,7 +13,8 @@
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="menu.html">Menu</a></li>
-                <li><a href="#about">About</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="login.html">Log Out</a></li>
             </ul>
             <img src="./images/hamburger.png" alt="hamburger menu" class="hamburger">
         </nav>
@@ -22,16 +23,15 @@
     <div class="menu-container">
         <h1 class="menu-title">The Most Popular</h1>
         <div class="category-nav">
-            <button class="category-btn active">Burgers</button>
-            <button class="category-btn">Pizza</button>
-            <button class="category-btn">Sushi</button>
-            <button class="category-btn">Snacks</button>
-            <button class="category-btn">Salads</button>
-            <button class="category-btn">Drinks</button>
-            <button class="category-btn">Desserts</button>
+            <button class="category-btn active" data-category="all">All</button>
+            <button class="category-btn" data-category="starters">Starters</button>
+            <button class="category-btn" data-category="breakfast">Breakfast</button>
+            <button class="category-btn" data-category="lunch">Lunch</button>
+            <button class="category-btn" data-category="snacks">Snacks</button>
+            <button class="category-btn" data-category="desserts">Desserts</button>
+            <button class="category-btn" data-category="beverages">Beverages</button>
         </div>
         <div class="menu-grid" id="menuGrid"></div>
-        <button class="show-more">Show more</button>
     </div>
 
     <!-- Floating Cart -->
@@ -41,6 +41,12 @@
         <p>Total: $<span id="cart-total">0</span></p>
         <button class="btn-submit" id="submit-order">Submit Order</button>
         <div id="order-result" class="order-result"></div>
+    </div>
+
+    <!-- User Authentication -->
+    <div class="user-auth">
+        <input type="text" id="username" placeholder="Enter your username">
+        <button id="login">Login</button>
     </div>
 
     <script src="scripts/script_menu.js"></script>
