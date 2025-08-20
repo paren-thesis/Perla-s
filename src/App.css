@@ -39,6 +39,7 @@ body::before {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+	padding-top: 80px; /* Account for fixed navbar */
 }
 
 .navbar {
@@ -130,4 +131,5 @@ main {
 	max-width: 1200px;
 	margin: 0 auto;
 	width: 100%;
+	margin-top: 80px; /* Account for fixed navbar */
 }

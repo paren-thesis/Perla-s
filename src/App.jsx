@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Menu from "./pages/Menu";
 import Login from "./pages/Login";
+import Footer from "./components/Footer";
 import "./App.css";
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 					<Route path="/menu" element={<Menu />} />
 					<Route path="/login" element={<Login />} />
 				</Routes>
+				<Footer />
 			</div>
 		</Router>
 	);
