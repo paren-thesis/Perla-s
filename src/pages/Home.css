@@ -1,0 +1,236 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
+
+.hero {
+	padding: 100px 20px 50px;
+	text-align: center;
+	position: relative;
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-wrap: wrap;
+	background-color: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+}
+
+.hero-text {
+	width: 50%;
+	margin-right: 6rem;
+}
+
+.hero h1 {
+	font-size: 2.5rem;
+	color: #333;
+	margin-bottom: 1rem;
+}
+
+.hero p {
+	font-size: 1.1rem;
+	color: #666;
+	margin-bottom: 2rem;
+}
+
+.buttons {
+	margin-bottom: 2rem;
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.food-menu,
+.book-table {
+	padding: 12px 24px;
+	border: 2px solid #d4a017;
+	background-color: #d4a017;
+	color: white;
+	border-radius: 25px;
+	cursor: pointer;
+	font-size: 1rem;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	width: auto;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	box-shadow: 0 4px 8px rgba(212, 160, 23, 0.3);
+}
+
+.food-menu:hover,
+.book-table:hover {
+	background-color: transparent;
+	color: #d4a017;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 12px rgba(212, 160, 23, 0.4);
+}
+
+.hero-image {
+	width: 50%;
+	max-width: 400px;
+	margin-top: 2rem;
+	object-fit: cover;
+}
+
+.top-list {
+	padding: 50px 20px;
+	text-align: center;
+	background-color: rgba(245, 245, 245, 0.9);
+	position: relative;
+	min-height: 100vh;
+}
+
+.top-list h2 {
+	font-size: 2rem;
+	color: #333;
+	margin-bottom: 1rem;
+	margin-top: 3rem;
+}
+
+.top-list h3 {
+	font-size: 1.2rem;
+	color: #666;
+	margin-bottom: 2rem;
+}
+
+.menu-items {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	flex-wrap: wrap;
+}
+
+.menu-item {
+	background-color: rgba(255, 255, 255, 0.95);
+	border-radius: 15px;
+	padding: 1.5rem;
+	width: 280px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+	border: 1px solid rgba(212, 160, 23, 0.1);
+	backdrop-filter: blur(5px);
+	-webkit-backdrop-filter: blur(5px);
+}
+
+.menu-item:hover {
+	transform: translateY(-5px);
+}
+
+.menu-item img {
+	width: 100%;
+	height: 200px;
+	border-radius: 5px;
+	margin-bottom: 1rem;
+	object-fit: cover;
+}
+
+.menu-item h4 {
+	font-size: 1.2rem;
+	color: #333;
+	margin-bottom: 0.5rem;
+}
+
+.menu-item p {
+	font-size: 1rem;
+	color: #666;
+	margin-bottom: 0.5rem;
+}
+
+.rating {
+	font-size: 1rem;
+	color: #d4a017;
+	margin-bottom: 0.5rem;
+}
+
+.price {
+	font-size: 1.2rem;
+	color: #333;
+	font-weight: bold;
+}
+
+.potatoes-section {
+	padding: 30px 10px;
+	text-align: center;
+	background-color: rgba(245, 245, 245, 0.9);
+	position: relative;
+	min-height: 100vh;
+}
+
+.potatoes-section h2 {
+	font-size: 2rem;
+	color: #333;
+	margin-bottom: 1rem;
+	margin-top: 5rem;
+}
+
+.potatoes-section p {
+	font-size: 1.1rem;
+	color: #666;
+	margin-bottom: 2rem;
+}
+
+.fries {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-gap: 10px;
+	margin: 0 auto;
+	max-width: 1200px;
+}
+
+.fries-image {
+	width: 100%;
+	max-width: 400px;
+	height: 300px;
+	border-radius: 10px;
+	object-fit: cover;
+}
+
+.services {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+	flex-wrap: wrap;
+	padding: 50px 20px;
+	background-color: rgba(255, 255, 255, 0.9);
+}
+
+.service {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 1rem;
+	color: #666;
+	padding: 0.5rem;
+}
+
+.service img {
+	width: 50px;
+	height: 50px;
+	border-radius: 25px;
+}
+
+@media (max-width: 768px) {
+	.hero {
+		padding: 80px 10px 30px;
+		flex-direction: column;
+	}
+
+	.hero-text {
+		width: 100%;
+		margin-right: 0;
+		margin-bottom: 2rem;
+	}
+
+	.hero-image {
+		width: 100%;
+		max-width: 300px;
+	}
+
+	.menu-item {
+		width: 100%;
+		max-width: 300px;
+	}
+
+	.fries {
+		grid-template-columns: 1fr;
+	}
+}
