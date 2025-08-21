@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryTabs from "../components/CategoryTabs";
 import MenuCard from "../components/MenuCard";
@@ -91,6 +91,11 @@ function Menu() {
 	const navigate = useNavigate();
 	const [selectedCategory, setSelectedCategory] = useState("all");
 	const [cartItems, setCartItems] = useState([]); // { id, name, price, image, quantity }
+	const [isCartOpen, setIsCartOpen] = useState(false);
+
+	useEffect(() => {
+		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
+	}, [cartItems, isCartOpen]);
 
 	const categories = useMemo(() => {
 		const counts = menuItems.reduce((acc, item) => {
@@ -163,13 +168,23 @@ function Menu() {
 		navigate("/login");
 	};
 
+	const totalQuantity = useMemo(
+		() => cartItems.reduce((acc, it) => acc + it.quantity, 0),
+		[cartItems]
+	);
+
+	const totalPrice = useMemo(
+		() => cartItems.reduce((acc, it) => acc + it.price * it.quantity, 0).toFixed(2),
+		[cartItems]
+	);
+
 	return (
 		<div className="min-h-screen bg-gray-50">
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-8">
 				{/* Header */}
 				<div className="mb-8">
 					<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 text-center mb-6">
-						The Most Popular
+						Menu
 					</h1>
 					<div className="flex justify-center">
 						<CategoryTabs
@@ -180,32 +195,73 @@ function Menu() {
 					</div>
 				</div>
 
-				{/* Content */}
-				<div className="relative">
-					{/* Menu Grid */}
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-						{filteredItems.map((item) => (
-							<MenuCard key={item.id} item={item} onAdd={addToCart} />
-						))}
+				{/* Menu Grid */}
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+					{filteredItems.map((item) => (
+						<MenuCard key={item.id} item={item} onAdd={addToCart} />
+					))}
+				</div>
+			</div>
+
+			{/* Bubble Toggle - Mobile Count Only */}
+			{cartItems.length > 0 && (
+				<button
+					onClick={() => setIsCartOpen((v) => !v)}
+					className="fixed bottom-5 right-5 z-50 lg:hidden inline-flex items-center gap-2 px-3 h-12 rounded-full shadow-lg border border-primary-200 bg-white text-secondary-900 focus:outline-none focus-visible:ring-2 ring-primary-500 ring-offset-2"
+					aria-label="Toggle cart"
+				>
+					<span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white text-sm font-bold">{totalQuantity}</span>
+					<span className="text-sm font-semibold">${totalPrice}</span>
+				</button>
+			)}
+
+			{/* Bubble Toggle - Desktop Count + Subtotal */}
+			{cartItems.length > 0 && (
+				<button
+					onClick={() => setIsCartOpen((v) => !v)}
+					className="hidden lg:inline-flex fixed bottom-6 right-6 z-50 items-center gap-3 px-4 h-12 rounded-full shadow-lg border border-primary-200 bg-white text-secondary-900 hover:shadow-xl transition focus:outline-none focus-visible:ring-2 ring-primary-500 ring-offset-2"
+					aria-label="Toggle cart"
+				>
+					<span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white text-sm font-bold">
+						{totalQuantity}
+					</span>
+					<span className="text-sm font-semibold text-gray-600">Cart</span>
+					<span className="text-sm font-bold text-secondary-900">${totalPrice}</span>
+				</button>
+			)}
+
+			{/* Mobile Bottom Sheet Cart */}
+			{cartItems.length > 0 && isCartOpen && (
+				<div className="lg:hidden fixed inset-x-0 bottom-0 z-50 p-4">
+					<div className="relative">
+						<Cart
+							items={cartItems}
+							onIncrement={increment}
+							onDecrement={decrement}
+							onRemove={removeFromCart}
+							onSubmit={handleSubmit}
+							isMobile={true}
+						/>
+						<button
+							onClick={() => setIsCartOpen(false)}
+							className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
+							title="Close"
+						>
+							×
+						</button>
 					</div>
+				</div>
+			)}
 
-					{/* Floating Cart - Only appears when items are added */}
-					{cartItems.length > 0 && (
-						<div className="fixed bottom-4 right-4 z-50 lg:hidden">
-							<Cart
-								items={cartItems}
-								onIncrement={increment}
-								onDecrement={decrement}
-								onRemove={removeFromCart}
-								onSubmit={handleSubmit}
-								isMobile={true}
-							/>
-						</div>
-					)}
-
-					{/* Desktop Cart Sidebar */}
-					{cartItems.length > 0 && (
-						<div className="hidden lg:block fixed top-24 right-6 w-80 z-40">
+			{/* Desktop Modal Overlay Cart with Blur */}
+			{cartItems.length > 0 && isCartOpen && (
+				<div className="hidden lg:block fixed inset-0 z-50">
+					<div
+						className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+						onClick={() => setIsCartOpen(false)}
+					/>
+					<div className="absolute top-24 right-8 w-[32rem] max-w-[92vw]">
+						<div className="relative">
 							<Cart
 								items={cartItems}
 								onIncrement={increment}
@@ -214,10 +270,17 @@ function Menu() {
 								onSubmit={handleSubmit}
 								isMobile={false}
 							/>
+							<button
+								onClick={() => setIsCartOpen(false)}
+								className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
+								title="Close"
+							>
+								×
+							</button>
 						</div>
-					)}
+					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }
