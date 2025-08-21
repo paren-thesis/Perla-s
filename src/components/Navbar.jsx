@@ -96,14 +96,14 @@ const Navbar = () => {
             <MobileNavLink to="/" isActive={isActive} onClick={closeMenu}>
               Home
             </MobileNavLink>
-            <MobileNavLink to="/about" isActive={isActive} onClick={closeMenu}>
-              About Us
-            </MobileNavLink>
             <MobileNavLink to="/menu" isActive={isActive} onClick={closeMenu}>
               Menu
             </MobileNavLink>
             <MobileNavLink to="/login" isActive={isActive} onClick={closeMenu}>
               Login
+            </MobileNavLink>
+            <MobileNavLink to="/about" isActive={isActive} onClick={closeMenu}>
+              About Us
             </MobileNavLink>
             <div className="pt-4">
               <button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
