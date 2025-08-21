@@ -164,34 +164,58 @@ function Menu() {
 	};
 
 	return (
-		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-			{/* Header */}
-			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-				<h1 className="text-3xl sm:text-4xl font-bold text-secondary-900">The Most Popular</h1>
-				<CategoryTabs
-					categories={categories}
-					selected={selectedCategory}
-					onChange={setSelectedCategory}
-				/>
-			</div>
+		<div className="min-h-screen bg-gray-50">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				{/* Header */}
+				<div className="mb-8">
+					<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 text-center mb-6">
+						The Most Popular
+					</h1>
+					<div className="flex justify-center">
+						<CategoryTabs
+							categories={categories}
+							selected={selectedCategory}
+							onChange={setSelectedCategory}
+						/>
+					</div>
+				</div>
 
-			{/* Content */}
-			<div className="grid lg:grid-cols-12 gap-8">
-				<div className="lg:col-span-8">
-					<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+				{/* Content */}
+				<div className="relative">
+					{/* Menu Grid */}
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
 						{filteredItems.map((item) => (
 							<MenuCard key={item.id} item={item} onAdd={addToCart} />
 						))}
 					</div>
-				</div>
-				<div className="lg:col-span-4">
-					<Cart
-						items={cartItems}
-						onIncrement={increment}
-						onDecrement={decrement}
-						onRemove={removeFromCart}
-						onSubmit={handleSubmit}
-					/>
+
+					{/* Floating Cart - Only appears when items are added */}
+					{cartItems.length > 0 && (
+						<div className="fixed bottom-4 right-4 z-50 lg:hidden">
+							<Cart
+								items={cartItems}
+								onIncrement={increment}
+								onDecrement={decrement}
+								onRemove={removeFromCart}
+								onSubmit={handleSubmit}
+								isMobile={true}
+							/>
+						</div>
+					)}
+
+					{/* Desktop Cart Sidebar */}
+					{cartItems.length > 0 && (
+						<div className="hidden lg:block fixed top-24 right-6 w-80 z-40">
+							<Cart
+								items={cartItems}
+								onIncrement={increment}
+								onDecrement={decrement}
+								onRemove={removeFromCart}
+								onSubmit={handleSubmit}
+								isMobile={false}
+							/>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
