@@ -48,14 +48,14 @@ const Navbar = () => {
             <NavLink to="/" isActive={isActive} onClick={closeMenu}>
               Home
             </NavLink>
-            <NavLink to="/about" isActive={isActive} onClick={closeMenu}>
-              About Us
-            </NavLink>
             <NavLink to="/menu" isActive={isActive} onClick={closeMenu}>
               Menu
             </NavLink>
             <NavLink to="/login" isActive={isActive} onClick={closeMenu}>
               Login
+            </NavLink>
+            <NavLink to="/about" isActive={isActive} onClick={closeMenu}>
+              About Us
             </NavLink>
           </div>
 
