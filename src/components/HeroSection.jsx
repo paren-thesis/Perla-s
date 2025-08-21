@@ -13,12 +13,12 @@ const HeroSection = () => {
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden px-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-4 sm:left-20 w-48 sm:w-72 h-48 sm:h-72 bg-primary-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-40 right-4 sm:right-20 w-48 sm:w-72 h-48 sm:h-72 bg-secondary-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-8 sm:left-40 w-48 sm:w-72 h-48 sm:h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-20 left-4 sm:left-20 w-32 sm:w-48 lg:w-72 h-32 sm:h-48 lg:h-72 bg-primary-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-4 sm:right-20 w-32 sm:w-48 lg:w-72 h-32 sm:h-48 lg:h-72 bg-secondary-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-8 sm:left-20 lg:left-40 w-32 sm:w-48 lg:w-72 h-32 sm:h-48 lg:h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 w-full">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Hero Content */}
           <div className="text-center lg:text-left space-y-6 sm:space-y-8 order-2 lg:order-1">
@@ -77,14 +77,14 @@ const HeroSection = () => {
               </div>
             </div>
             
-            {/* Floating Elements */}
-            <div className="absolute top-8 sm:top-10 -left-8 sm:-left-10 w-16 h-16 sm:w-20 sm:h-20 bg-secondary-200 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+            {/* Floating Elements - Constrained within container */}
+            <div className="absolute top-8 sm:top-10 left-0 sm:-left-8 lg:-left-10 w-16 h-16 sm:w-20 sm:h-20 bg-secondary-200 rounded-full flex items-center justify-center shadow-lg animate-bounce">
               <div className="w-2 h-2 sm:w-3 sm:h-3 bg-secondary-600 rounded-full"></div>
             </div>
-            <div className="absolute bottom-16 sm:bottom-20 -right-8 sm:-right-10 w-12 h-12 sm:w-16 sm:h-16 bg-primary-200 rounded-full flex items-center justify-center shadow-lg animate-bounce animation-delay-1000">
+            <div className="absolute bottom-16 sm:bottom-20 right-0 sm:-right-8 lg:-right-10 w-12 h-12 sm:w-16 sm:h-16 bg-primary-200 rounded-full flex items-center justify-center shadow-lg animate-bounce animation-delay-1000">
               <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary-600 rounded-full"></div>
             </div>
-            <div className="absolute top-1/2 -right-16 sm:-right-20 w-8 h-8 sm:w-12 sm:h-12 bg-secondary-300 rounded-full flex items-center justify-center shadow-lg animate-bounce animation-delay-2000">
+            <div className="absolute top-1/2 right-0 sm:-right-12 lg:-right-20 w-8 h-8 sm:w-12 sm:h-12 bg-secondary-300 rounded-full flex items-center justify-center shadow-lg animate-bounce animation-delay-2000">
               <div className="w-1 h-1 sm:w-2 sm:h-2 bg-secondary-600 rounded-full"></div>
             </div>
           </div>
