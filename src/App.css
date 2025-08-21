@@ -45,9 +45,9 @@ body::before {
 
 main {
 	flex: 1;
-	padding: 2rem;
-	max-width: 1200px;
-	margin: 0 auto;
+	padding: 0;
+	max-width: none;
+	margin: 0;
 	width: 100%;
-	margin-top: 5rem; /* Account for fixed navbar */
+	margin-top: 0; /* No margin needed as components handle their own spacing */
 }
