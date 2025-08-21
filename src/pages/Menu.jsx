@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
-import "./Menu.css";
+import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import CategoryTabs from "../components/CategoryTabs";
+import MenuCard from "../components/MenuCard";
+import Cart from "../components/Cart";
 
 const menuItems = [
 	{
@@ -85,124 +88,111 @@ const menuItems = [
 ];
 
 function Menu() {
+	const navigate = useNavigate();
 	const [selectedCategory, setSelectedCategory] = useState("all");
-	const [cartItems, setCartItems] = useState([]);
-	const [filteredItems, setFilteredItems] = useState(menuItems);
+	const [cartItems, setCartItems] = useState([]); // { id, name, price, image, quantity }
 
-	useEffect(() => {
-		if (selectedCategory === "all") {
-			setFilteredItems(menuItems);
-		} else {
-			setFilteredItems(
-				menuItems.filter((item) => item.category === selectedCategory)
-			);
-		}
-	}, [selectedCategory]);
+	const categories = useMemo(() => {
+		const counts = menuItems.reduce((acc, item) => {
+			acc[item.category] = (acc[item.category] || 0) + 1;
+			return acc;
+		}, {});
+		return [
+			{ label: "All", value: "all", count: menuItems.length },
+			{ label: "Starters", value: "starters", count: counts["starters"] || 0 },
+			{ label: "Breakfast", value: "breakfast", count: counts["breakfast"] || 0 },
+			{ label: "Lunch", value: "lunch", count: counts["lunch"] || 0 },
+			{ label: "Desserts", value: "desserts", count: counts["desserts"] || 0 },
+		];
+	}, []);
+
+	const filteredItems = useMemo(
+		() =>
+			selectedCategory === "all"
+				? menuItems
+				: menuItems.filter((item) => item.category === selectedCategory),
+		[selectedCategory]
+	);
 
 	const addToCart = (item) => {
-		setCartItems([...cartItems, item]);
+		setCartItems((prev) => {
+			const found = prev.find((it) => it.id === item.id);
+			if (found) {
+				return prev.map((it) =>
+					it.id === item.id ? { ...it, quantity: it.quantity + 1 } : it
+				);
+			}
+			return [
+				...prev,
+				{
+					id: item.id,
+					name: item.name,
+					price: item.price,
+					image: item.image,
+					quantity: 1,
+				},
+			];
+		});
 	};
 
-	const removeFromCart = (itemId) => {
-		setCartItems(cartItems.filter((item) => item.id !== itemId));
+	const increment = (id) => {
+		setCartItems((prev) =>
+			prev.map((it) => (it.id === id ? { ...it, quantity: it.quantity + 1 } : it))
+		);
 	};
 
-	const calculateTotal = () => {
-		return cartItems
-			.reduce((total, item) => total + item.price, 0)
-			.toFixed(2);
+	const decrement = (id) => {
+		setCartItems((prev) => {
+			const target = prev.find((it) => it.id === id);
+			if (!target) return prev;
+			if (target.quantity <= 1) return prev.filter((it) => it.id !== id);
+			return prev.map((it) => (it.id === id ? { ...it, quantity: it.quantity - 1 } : it));
+		});
 	};
 
-	const submitOrder = () => {
+	const removeFromCart = (id) => {
+		setCartItems((prev) => prev.filter((it) => it.id !== id));
+	};
+
+	const handleSubmit = () => {
 		if (cartItems.length === 0) {
 			alert("Please add items to your cart first!");
 			return;
 		}
-		alert("Order submitted successfully!");
-		setCartItems([]);
+		alert("You need an account to complete checkout. Redirecting to login...");
+		navigate("/login");
 	};
 
 	return (
-		<div className="menu-container">
-			<h1 className="menu-title">The Most Popular</h1>
-
-			<div className="category-nav">
-				<button
-					className={`category-btn ${
-						selectedCategory === "all" ? "active" : ""
-					}`}
-					onClick={() => setSelectedCategory("all")}
-				>
-					All
-				</button>
-				<button
-					className={`category-btn ${
-						selectedCategory === "starters" ? "active" : ""
-					}`}
-					onClick={() => setSelectedCategory("starters")}
-				>
-					Starters
-				</button>
-				<button
-					className={`category-btn ${
-						selectedCategory === "breakfast" ? "active" : ""
-					}`}
-					onClick={() => setSelectedCategory("breakfast")}
-				>
-					Breakfast
-				</button>
-				<button
-					className={`category-btn ${
-						selectedCategory === "lunch" ? "active" : ""
-					}`}
-					onClick={() => setSelectedCategory("lunch")}
-				>
-					Lunch
-				</button>
-				<button
-					className={`category-btn ${
-						selectedCategory === "desserts" ? "active" : ""
-					}`}
-					onClick={() => setSelectedCategory("desserts")}
-				>
-					Desserts
-				</button>
+		<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+			{/* Header */}
+			<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+				<h1 className="text-3xl sm:text-4xl font-bold text-secondary-900">The Most Popular</h1>
+				<CategoryTabs
+					categories={categories}
+					selected={selectedCategory}
+					onChange={setSelectedCategory}
+				/>
 			</div>
 
-			<div className="menu-grid">
-				{filteredItems.map((item) => (
-					<div key={item.id} className="menu-item">
-						<img src={item.image} alt={item.name} />
-						<h3>{item.name}</h3>
-						<p>{item.description}</p>
-						<p className="price">${item.price}</p>
-						<button
-							className="btn-submit"
-							onClick={() => addToCart(item)}
-						>
-							Add to Cart
-						</button>
+			{/* Content */}
+			<div className="grid lg:grid-cols-12 gap-8">
+				<div className="lg:col-span-8">
+					<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+						{filteredItems.map((item) => (
+							<MenuCard key={item.id} item={item} onAdd={addToCart} />
+						))}
 					</div>
-				))}
-			</div>
-
-			<div className="cart">
-				<h3>Cart</h3>
-				<ul className="cart-items">
-					{cartItems.map((item, index) => (
-						<li key={index}>
-							<span>{item.name}</span>
-							<span>${item.price}</span>
-							<button onClick={() => removeFromCart(item.id)}>
-								Remove
-							</button>
-						</li>
-					))}
-				</ul>
-				<p>Total: ${calculateTotal()}</p>
-				<button className="btn-submit" onClick={submitOrder}>
-					Submit Order
-				</button>
+				</div>
+				<div className="lg:col-span-4">
+					<Cart
+						items={cartItems}
+						onIncrement={increment}
+						onDecrement={decrement}
+						onRemove={removeFromCart}
+						onSubmit={handleSubmit}
+					/>
+				</div>
 			</div>
 		</div>
 	);
