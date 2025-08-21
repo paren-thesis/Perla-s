@@ -159,6 +159,10 @@ function Menu() {
 		setCartItems((prev) => prev.filter((it) => it.id !== id));
 	};
 
+	const clearCart = () => {
+		setCartItems([]);
+	};
+
 	const handleSubmit = () => {
 		if (cartItems.length === 0) {
 			alert("Please add items to your cart first!");
@@ -240,6 +244,7 @@ function Menu() {
 							onDecrement={decrement}
 							onRemove={removeFromCart}
 							onSubmit={handleSubmit}
+							onClearCart={clearCart}
 							isMobile={true}
 						/>
 						<button
@@ -268,6 +273,7 @@ function Menu() {
 								onDecrement={decrement}
 								onRemove={removeFromCart}
 								onSubmit={handleSubmit}
+								onClearCart={clearCart}
 								isMobile={false}
 							/>
 							<button

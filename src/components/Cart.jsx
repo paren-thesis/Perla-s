@@ -1,17 +1,32 @@
 import React from "react";
 
-function Cart({ items, onIncrement, onDecrement, onRemove, onSubmit, isMobile = false }) {
+function Cart({ items, onIncrement, onDecrement, onRemove, onSubmit, isMobile = false, onClearCart }) {
 	const total = items
 		.reduce((acc, it) => acc + it.price * it.quantity, 0)
 		.toFixed(2);
 
+	const handleClearCart = () => {
+		if (window.confirm("Are you sure you want to clear your cart? This action cannot be undone.")) {
+			onClearCart();
+		}
+	};
+
 	if (isMobile) {
 		return (
 			<div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-4 max-w-sm">
-				<h3 className="text-lg font-bold text-secondary-900 mb-3 flex items-center justify-between">
-					<span>Cart ({items.length})</span>
-					<span className="text-sm font-semibold text-primary-600">${total}</span>
-				</h3>
+				<div className="flex items-center justify-between mb-3">
+					<h3 className="text-lg font-bold text-secondary-900">Cart ({items.length})</h3>
+					<button
+						onClick={handleClearCart}
+						className="text-red-600 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+						title="Clear cart"
+					>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+				<div className="text-sm font-semibold text-primary-600 mb-3 text-right">${total}</div>
 
 				<div className="max-h-64 overflow-y-auto">
 					<ul className="space-y-2">
@@ -61,10 +76,21 @@ function Cart({ items, onIncrement, onDecrement, onRemove, onSubmit, isMobile = 
 	// Desktop sidebar layout
 	return (
 		<aside className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6">
-			<h3 className="text-xl font-bold text-secondary-900 mb-4 flex items-center justify-between">
-				<span>Cart</span>
-				<span className="text-sm font-semibold text-gray-500">{items.length} item{items.length !== 1 ? "s" : ""}</span>
-			</h3>
+			<div className="flex items-center justify-between mb-4">
+				<h3 className="text-xl font-bold text-secondary-900">Cart</h3>
+				<div className="flex items-center gap-3">
+					<span className="text-sm font-semibold text-gray-500">{items.length} item{items.length !== 1 ? "s" : ""}</span>
+					<button
+						onClick={handleClearCart}
+						className="text-red-600 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+						title="Clear cart"
+					>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+			</div>
 
 			<div className="max-h-96 overflow-y-auto">
 				<ul className="divide-y divide-gray-100">
