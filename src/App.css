@@ -15,7 +15,7 @@
 }
 
 body {
-	background: url("/images/background.jpg") no-repeat center center fixed;
+	background: rgba(255, 252, 239, 0.8);
 	background-size: cover;
 	color: var(--text-color);
 	line-height: 1.6;
