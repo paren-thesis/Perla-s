@@ -6,10 +6,8 @@ function Cart({ items, onIncrement, onDecrement, onRemove, onSubmit, isMobile = 
 		.toFixed(2);
 
 	const handleClearCart = () => {
-		if (window.confirm("Are you sure you want to clear your cart? This action cannot be undone.")) {
-			onClearCart();
-		}
-	};
+	onClearCart();
+};
 
 	if (isMobile) {
 		return (
