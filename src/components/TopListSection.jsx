@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaStar, FaUtensils, FaFish, FaLeaf } from "react-icons/fa";
 
 const TopListSection = () => {
@@ -32,6 +32,31 @@ const TopListSection = () => {
 		},
 	];
 
+	const [isVisible, setIsVisible] = useState(false);
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					const timer = setTimeout(() => setIsVisible(true), 100);
+					return () => clearTimeout(timer);
+				}
+			},
+			{ threshold: 0.1 } // Trigger when 10% of component is visible
+		);
+
+		const section = document.getElementById("top-list-section");
+		if (section) {
+			observer.observe(section);
+		}
+
+		return () => {
+			if (section) {
+				observer.unobserve(section);
+			}
+		};
+	}, []);
+
 	const renderStars = (rating) => {
 		const stars = [];
 		const fullStars = Math.floor(rating);
@@ -61,10 +86,19 @@ const TopListSection = () => {
 	};
 
 	return (
-		<section className="py-12 sm:py-16 lg:py-20 bg-white px-4">
+		<section
+			id="top-list-section"
+			className="py-12 sm:py-16 lg:py-20 bg-white px-4"
+		>
 			<div className="max-w-7xl mx-auto">
 				{/* Section Header */}
-				<div className="text-center mb-12 sm:mb-16">
+				<div
+					className={`text-center mb-12 sm:mb-16 transition-all duration-700 ease-out ${
+						isVisible
+							? "opacity-100 translate-y-0"
+							: "opacity-0 translate-y-8"
+					}`}
+				>
 					<h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">
 						Top List
 					</h2>
@@ -75,13 +109,23 @@ const TopListSection = () => {
 				</div>
 
 				{/* Menu Items Grid */}
+				{/* Menu Items Grid */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-					{menuItems.map((item) => {
+					{menuItems.map((item, index) => {
 						const IconComponent = item.icon;
 						return (
 							<div
 								key={item.id}
-								className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-gray-100"
+								className={`group bg-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-gray-100 transition-all duration-700 ease-out ${
+									isVisible
+										? "opacity-100 translate-y-0"
+										: "opacity-0 translate-y-8"
+								}`}
+								style={{
+									transitionDelay: isVisible
+										? `${index * 150}ms`
+										: "0ms",
+								}}
 							>
 								{/* Icon Header */}
 								<div
@@ -123,7 +167,14 @@ const TopListSection = () => {
 				</div>
 
 				{/* View All Menu Button */}
-				<div className="text-center mt-10 sm:mt-12">
+				<div
+					className={`text-center mt-10 sm:mt-12 transition-all duration-700 ease-out ${
+						isVisible
+							? "opacity-100 translate-y-0"
+							: "opacity-0 translate-y-8"
+					}`}
+					style={{ transitionDelay: isVisible ? "450ms" : "0ms" }}
+				>
 					<button className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-primary-600 bg-white border-2 border-primary-500 rounded-full hover:bg-primary-50 hover:border-primary-600 transform hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
 						<FaUtensils className="mr-2" />
 						View Full Menu

@@ -2,12 +2,46 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaUtensils, FaStar, FaLeaf } from "react-icons/fa";
 
 const FrenchFriesSection = () => {
+	const [isVisible, setIsVisible] = useState(false);
+	const sectionRef = useRef(null);
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					const timer = setTimeout(() => setIsVisible(true), 100);
+					return () => clearTimeout(timer);
+				}
+			},
+			{ threshold: 0.1 }
+		);
+
+		if (sectionRef.current) {
+			observer.observe(sectionRef.current);
+		}
+
+		return () => {
+			if (sectionRef.current) {
+				observer.unobserve(sectionRef.current);
+			}
+		};
+	}, []);
+
 	return (
-		<section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 px-4">
+		<section
+			ref={sectionRef}
+			className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 px-4"
+		>
 			<div className="max-w-7xl mx-auto">
 				<div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 					{/* Content */}
-					<div className="space-y-6 sm:space-y-8 order-2 lg:order-1">
+					<div
+						className={`space-y-6 sm:space-y-8 order-2 lg:order-1 transition-all duration-700 ease-out ${
+							isVisible
+								? "opacity-100 translate-y-0"
+								: "opacity-0 translate-y-8"
+						}`}
+					>
 						<div className="space-y-4">
 							<h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary-900">
 								Best French Fries
@@ -57,7 +91,13 @@ const FrenchFriesSection = () => {
 					</div>
 
 					{/* Visual Elements */}
-					<div className="relative order-1 lg:order-2 mb-8 lg:mb-0">
+					<div
+						className={`relative order-1 lg:order-2 mb-8 lg:mb-0 transition-all duration-700 ease-out delay-150 ${
+							isVisible
+								? "opacity-100 translate-y-0"
+								: "opacity-0 translate-y-8"
+						}`}
+					>
 						{/* Main Fries Icon */}
 						<div className="relative z-10">
 							<div className="w-64 h-64 sm:w-80 sm:h-80 mx-auto bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">

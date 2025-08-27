@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUtensils, FaCalendarAlt } from 'react-icons/fa';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger animation after component mounts
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleBookTable = () => {
     alert("Table booking feature coming soon!");
@@ -21,7 +28,9 @@ const HeroSection = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 w-full">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Hero Content */}
-          <div className="text-center lg:text-left space-y-6 sm:space-y-8 order-2 lg:order-1">
+          <div className={`text-center lg:text-left space-y-6 sm:space-y-8 order-2 lg:order-1 transition-all duration-700 ease-out ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
             <div className="space-y-4">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 <span className="text-secondary-900">Delicious Food</span>
@@ -70,7 +79,9 @@ const HeroSection = () => {
           </div>
 
           {/* Hero Visual */}
-          <div className="relative order-1 lg:order-2 mb-8 lg:mb-0">
+          <div className={`relative order-1 lg:order-2 mb-8 lg:mb-0 transition-all duration-700 ease-out delay-150 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
             <div className="relative z-10">
               <div className="w-64 h-64 sm:w-80 sm:h-80 mx-auto lg:ml-auto bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center shadow-2xl">
                 <FaUtensils className="text-white text-6xl sm:text-8xl" />
