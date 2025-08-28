@@ -5,11 +5,13 @@ import Menu from "./pages/Menu";
 import Login from "./pages/Login";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
 
 function App() {
 	return (
 		<Router>
+			<ScrollToTop /> {/* Add this line */}
 			<div className="app">
 				<Navbar />
 
