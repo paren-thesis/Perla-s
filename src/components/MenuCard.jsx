@@ -1,8 +1,40 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 function MenuCard({ item, onAdd }) {
+	const [isVisible, setIsVisible] = useState(false);
+	const cardRef = useRef(null);
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					const timer = setTimeout(() => setIsVisible(true), 100);
+					return () => clearTimeout(timer);
+				}
+			},
+			{ threshold: 0.1 }
+		);
+
+		if (cardRef.current) {
+			observer.observe(cardRef.current);
+		}
+
+		return () => {
+			if (cardRef.current) {
+				observer.unobserve(cardRef.current);
+			}
+		};
+	}, []);
+
 	return (
-		<div className="group bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 h-full flex flex-col">
+		<div
+			ref={cardRef}
+			className={`group bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 h-full flex flex-col transition-all duration-700 ease-out ${
+				isVisible
+					? "opacity-100 translate-y-0"
+					: "opacity-0 translate-y-6"
+			}`}
+		>
 			<div className="relative aspect-[4/3] overflow-hidden">
 				<img
 					src={item.image}
