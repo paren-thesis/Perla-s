@@ -5,12 +5,17 @@ import AboutStory from "../components/About/AboutStory";
 import AboutValues from "../components/About/AboutValues";
 import AboutTeam from "../components/About/AboutTeam";
 import AboutCTA from "../components/About/AboutCTA";
+import AnimatedSection from "../components/AnimatedSection";
 
 function About() {
 	return (
 		<div className="min-h-screen bg-white">
-			<AboutHero />
-			<AboutStats />
+			<AnimatedSection delay={100}>
+				<AboutHero />
+			</AnimatedSection>
+			<AnimatedSection delay={200}>
+				<AboutStats />
+			</AnimatedSection>
 			<AboutStory />
 			<AboutValues />
 			<AboutTeam />
