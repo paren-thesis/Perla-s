@@ -369,7 +369,7 @@ function Menu() {
                   onClick={closeLoginDialog}
                   className="flex-1 bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors duration-200"
                 >
-                  Wait
+                  Not Now
                 </button>
                 <button
                   onClick={handleLoginRedirect}
