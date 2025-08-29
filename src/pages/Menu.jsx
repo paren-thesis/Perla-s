@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CategoryTabs from "../components/CategoryTabs";
-import MenuCard from "../components/MenuCard";
-import Cart from "../components/Cart";
+import CategoryTabs from "../components/Menu/CategoryTabs";
+import MenuCard from "../components/Menu/MenuCard";
+import Cart from "../components/Menu/Cart";
 
 const menuItems = [
   {
