@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryTabs from "../components/Menu/CategoryTabs";
 import MenuCard from "../components/Menu/MenuCard";
+import MenuCardSkeleton from "../components/Menu/MenuCardSkeleton";
 import Cart from "../components/Menu/Cart";
 
 const menuItems = [
@@ -94,6 +95,15 @@ function Menu() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showClearCartDialog, setShowClearCartDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500); // 1.5 second loading simulation
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
@@ -212,9 +222,19 @@ function Menu() {
 
         {/* Menu Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {filteredItems.map((item) => (
-            <MenuCard key={item.id} item={item} onAdd={addToCart} />
-          ))}
+          {isLoading
+            ? // Show skeleton cards while loading
+              Array.from({ length: 8 }).map((_, index) => (
+                <MenuCardSkeleton key={`skeleton-${index}`} />
+              ))
+            : // Show actual menu cards when data is loaded
+              filteredItems.map((item) => (
+                <MenuCard
+                  key={item.id}
+                  item={item}
+                  onAdd={addToCart}
+                />
+              ))}
         </div>
       </div>
 
