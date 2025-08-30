@@ -91,19 +91,33 @@ const menuItems = [
 function Menu() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cartItems, setCartItems] = useState([]); // { id, name, price, image, quantity }
+  const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showClearCartDialog, setShowClearCartDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCategoryChanging, setIsCategoryChanging] = useState(false);
 
+
+    // Simulate initial loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500); // 1.5 second loading simulation
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
+
+  // Handle category changes with loading state
+  const handleCategoryChange = (category) => {
+    setIsCategoryChanging(true);
+    setSelectedCategory(category);
+    
+    // Simulate API call delay when changing categories
+    setTimeout(() => {
+      setIsCategoryChanging(false);
+    }, 800); // Shorter delay for category changes
+  };
 
   useEffect(() => {
     if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
@@ -130,6 +144,13 @@ function Menu() {
         : menuItems.filter((item) => item.category === selectedCategory),
     [selectedCategory]
   );
+
+  // Calculate how many skeleton cards to show based on category
+  const getSkeletonCount = () => {
+    if (selectedCategory === "all") return 8;
+    const categoryCount = menuItems.filter(item => item.category === selectedCategory).length;
+    return Math.max(4, categoryCount); // Show at least 4 skeletons
+  };
 
   const addToCart = (item) => {
     setCartItems((prev) => {
@@ -215,16 +236,16 @@ function Menu() {
             <CategoryTabs
               categories={categories}
               selected={selectedCategory}
-              onChange={setSelectedCategory}
+              onChange={handleCategoryChange} // Use the new handler
             />
           </div>
         </div>
 
         {/* Menu Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {isLoading
-            ? // Show skeleton cards while loading
-              Array.from({ length: 8 }).map((_, index) => (
+          {isLoading || isCategoryChanging
+            ? // Show skeleton cards while loading or changing categories
+              Array.from({ length: getSkeletonCount() }).map((_, index) => (
                 <MenuCardSkeleton key={`skeleton-${index}`} />
               ))
             : // Show actual menu cards when data is loaded
