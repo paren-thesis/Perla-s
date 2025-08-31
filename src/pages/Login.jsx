@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 function Login() {
 	const [isMounted, setIsMounted] = useState(false);
@@ -13,14 +14,21 @@ function Login() {
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const [errors, setErrors] = useState({});
 	const navigate = useNavigate();
+	const { login, signup, googleSignIn, currentUser } = useAuth();
 
 	useEffect(() => {
 		const timer = setTimeout(() => setIsMounted(true), 100);
 		return () => clearTimeout(timer);
 	}, []);
 
-	const [errors, setErrors] = useState({});
+	// Redirect if user is already logged in
+	useEffect(() => {
+		if (currentUser) {
+			navigate("/menu");
+		}
+	}, [currentUser, navigate]);
 
 	const validateForm = () => {
 		const newErrors = {};
@@ -34,6 +42,8 @@ function Login() {
 				newErrors.email = "Email is invalid";
 			if (password !== confirmPassword)
 				newErrors.confirmPassword = "Passwords do not match";
+			if (password.length < 6)
+				newErrors.password = "Password should be at least 6 characters";
 		}
 
 		setErrors(newErrors);
@@ -44,30 +54,48 @@ function Login() {
 		e.preventDefault();
 		if (!validateForm()) return;
 
-		// Simulate API call delay
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		setIsLoading(true);
 
-		if (isLoginMode) {
-			// Login logic
-			if (username.trim() && password.trim()) {
+		try {
+			if (isLoginMode) {
+				// Login logic
+				await login(email || `${username}@example.com`, password);
 				setDialogMessage("Login successful! Welcome back.");
 				setShowSuccessDialog(true);
-			}
-		} else {
-			// Sign up logic
-			if (
-				username.trim() &&
-				password.trim() &&
-				email.trim() &&
-				password === confirmPassword
-			) {
+			} else {
+				// Sign up logic
+				await signup(email, password);
 				setDialogMessage(
 					"Account created successfully! Welcome to Perla's."
 				);
 				setShowSuccessDialog(true);
 			}
+		} catch (error) {
+			console.error("Authentication error:", error);
+			setErrors({
+				submit:
+					error.message || "An error occurred during authentication",
+			});
+		} finally {
+			setIsLoading(false);
 		}
-		setIsLoading(false);
+	};
+
+	const handleGoogleSignIn = async () => {
+		try {
+			setIsLoading(true);
+			await googleSignIn();
+			setDialogMessage("Login with Google successful!");
+			setShowSuccessDialog(true);
+		} catch (error) {
+			console.error("Google sign-in error:", error);
+			setErrors({
+				submit:
+					error.message || "An error occurred during Google sign-in",
+			});
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const toggleMode = () => {
@@ -78,6 +106,7 @@ function Login() {
 		setEmail("");
 		setShowPassword(false);
 		setShowConfirmPassword(false);
+		setErrors({});
 	};
 
 	const togglePasswordVisibility = () => {
@@ -98,12 +127,12 @@ function Login() {
 
 	const isFormValid = () => {
 		if (isLoginMode) {
-			return username.trim() && password.trim();
+			return (username.trim() || email.trim()) && password.trim();
 		} else {
 			return (
 				username.trim() &&
-				password.trim() &&
 				email.trim() &&
+				password.trim() &&
 				password === confirmPassword
 			);
 		}
@@ -133,6 +162,12 @@ function Login() {
 					<h2 className="text-2xl font-bold text-secondary-900 text-center mb-6">
 						{isLoginMode ? "Sign In" : "Sign Up"}
 					</h2>
+
+					{errors.submit && (
+						<div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+							{errors.submit}
+						</div>
+					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
 						{/* Username Field */}
@@ -168,6 +203,7 @@ function Login() {
 								</p>
 							)}
 						</div>
+
 						{/* Email Field - Only for Sign Up */}
 						{!isLoginMode && (
 							<div>
@@ -182,11 +218,25 @@ function Login() {
 									id="email"
 									name="email"
 									value={email}
-									onChange={(e) => setEmail(e.target.value)}
+									onChange={(e) => {
+										setEmail(e.target.value);
+										setErrors((prev) => ({
+											...prev,
+											email: "",
+										}));
+									}}
 									placeholder="Enter your email"
-									required
-									className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400"
+									className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
+										errors.email
+											? "border-red-300"
+											: "border-gray-300"
+									}`}
 								/>
+								{errors.email && (
+									<p className="text-red-500 text-sm mt-1">
+										{errors.email}
+									</p>
+								)}
 							</div>
 						)}
 
@@ -204,12 +254,19 @@ function Login() {
 									id="password"
 									name="password"
 									value={password}
-									onChange={(e) =>
-										setPassword(e.target.value)
-									}
+									onChange={(e) => {
+										setPassword(e.target.value);
+										setErrors((prev) => ({
+											...prev,
+											password: "",
+										}));
+									}}
 									placeholder="Enter your password"
-									required
-									className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400"
+									className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
+										errors.password
+											? "border-red-300"
+											: "border-gray-300"
+									}`}
 								/>
 								<button
 									type="button"
@@ -254,7 +311,7 @@ function Login() {
 								</button>
 							</div>
 
-							{/* Add this Forgot Password Link */}
+							{/* Forgot Password Link */}
 							{isLoginMode && (
 								<div className="text-right mt-2">
 									<button
@@ -271,19 +328,19 @@ function Login() {
 								</div>
 							)}
 
-							{/* Add this Password Strength Indicator */}
+							{/* Password Strength Indicator */}
 							{!isLoginMode && password && (
 								<div className="mt-2">
 									<div className="flex justify-between text-xs text-gray-500 mb-1">
 										<span>Password strength:</span>
 										<span
 											className={
-												password.length >= 8
+												password.length >= 6
 													? "text-green-600 font-medium"
 													: "text-yellow-600 font-medium"
 											}
 										>
-											{password.length >= 8
+											{password.length >= 6
 												? "Strong"
 												: "Weak"}
 										</span>
@@ -291,19 +348,24 @@ function Login() {
 									<div className="w-full bg-gray-200 rounded-full h-1">
 										<div
 											className={`h-1 rounded-full transition-all duration-300 ${
-												password.length >= 8
+												password.length >= 6
 													? "bg-green-500"
 													: "bg-yellow-500"
 											}`}
 											style={{
 												width: `${Math.min(
-													(password.length / 8) * 100,
+													(password.length / 6) * 100,
 													100
 												)}%`,
 											}}
 										></div>
 									</div>
 								</div>
+							)}
+							{errors.password && (
+								<p className="text-red-500 text-sm mt-1">
+									{errors.password}
+								</p>
 							)}
 						</div>
 
@@ -326,11 +388,14 @@ function Login() {
 										id="confirmPassword"
 										name="confirmPassword"
 										value={confirmPassword}
-										onChange={(e) =>
-											setConfirmPassword(e.target.value)
-										}
+										onChange={(e) => {
+											setConfirmPassword(e.target.value);
+											setErrors((prev) => ({
+												...prev,
+												confirmPassword: "",
+											}));
+										}}
 										placeholder="Confirm your password"
-										required
 										className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
 											confirmPassword &&
 											password !== confirmPassword
@@ -382,12 +447,11 @@ function Login() {
 										)}
 									</button>
 								</div>
-								{confirmPassword &&
-									password !== confirmPassword && (
-										<p className="text-red-500 text-sm mt-1">
-											Passwords do not match
-										</p>
-									)}
+								{errors.confirmPassword && (
+									<p className="text-red-500 text-sm mt-1">
+										{errors.confirmPassword}
+									</p>
+								)}
 							</div>
 						)}
 
@@ -432,7 +496,9 @@ function Login() {
 					{/* Continue with Google Button */}
 					<button
 						type="button"
-						className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+						onClick={handleGoogleSignIn}
+						disabled={isLoading}
+						className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						<svg className="w-5 h-5" viewBox="0 0 24 24">
 							<path
@@ -519,17 +585,15 @@ function Login() {
 								>
 									Close
 								</button>
-								{isLoginMode && (
-									<button
-										onClick={() => {
-											closeDialog();
-											navigate("/menu");
-										}}
-										className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white py-2.5 px-4 rounded-lg font-medium hover:from-primary-600 hover:to-primary-700 transition-all duration-200"
-									>
-										Go to Menu
-									</button>
-								)}
+								<button
+									onClick={() => {
+										closeDialog();
+										navigate("/menu");
+									}}
+									className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white py-2.5 px-4 rounded-lg font-medium hover:from-primary-600 hover:to-primary-700 transition-all duration-200"
+								>
+									Go to Menu
+								</button>
 							</div>
 						</div>
 					</div>

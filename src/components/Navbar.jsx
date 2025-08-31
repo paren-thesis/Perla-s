@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +22,19 @@ const Navbar = () => {
   const closeMenu = () => setIsOpen(false);
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    } finally {
+      setIsLoggingOut(false);
+      closeMenu();
+    }
+  };
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -51,12 +68,35 @@ const Navbar = () => {
             <NavLink to="/menu" isActive={isActive} onClick={closeMenu}>
               Menu
             </NavLink>
-            <NavLink to="/login" isActive={isActive} onClick={closeMenu}>
-              Login
-            </NavLink>
             <NavLink to="/about" isActive={isActive} onClick={closeMenu}>
               About Us
             </NavLink>
+            
+            {currentUser ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {currentUser.email ? currentUser.email[0].toUpperCase() : 'U'}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-700">
+                    {currentUser.email || 'User'}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-all duration-300 disabled:opacity-50"
+                >
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              </div>
+            ) : (
+              <NavLink to="/login" isActive={isActive} onClick={closeMenu}>
+                Login
+              </NavLink>
+            )}
           </div>
 
           {/* CTA Button */}
@@ -99,12 +139,38 @@ const Navbar = () => {
             <MobileNavLink to="/menu" isActive={isActive} onClick={closeMenu}>
               Menu
             </MobileNavLink>
-            <MobileNavLink to="/login" isActive={isActive} onClick={closeMenu}>
-              Login
-            </MobileNavLink>
             <MobileNavLink to="/about" isActive={isActive} onClick={closeMenu}>
               About Us
             </MobileNavLink>
+            
+            {currentUser ? (
+              <>
+                <div className="px-4 py-3 flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {currentUser.email ? currentUser.email[0].toUpperCase() : 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {currentUser.email || 'User'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="w-full text-left px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+                >
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              </>
+            ) : (
+              <MobileNavLink to="/login" isActive={isActive} onClick={closeMenu}>
+                Login
+              </MobileNavLink>
+            )}
+            
             <div className="pt-4">
               <button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
                 Book a Table
