@@ -6,6 +6,7 @@ import {
 	onAuthStateChanged,
 	GoogleAuthProvider,
 	signInWithPopup,
+	sendEmailVerification,
 } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -19,8 +20,14 @@ export function AuthProvider({ children }) {
 	const [currentUser, setCurrentUser] = useState(null);
 	const [loading, setLoading] = useState(true);
 
-	function signup(email, password) {
-		return createUserWithEmailAndPassword(auth, email, password);
+	async function signup(email, password) {
+		const userCredential = await createUserWithEmailAndPassword(
+			auth,
+			email,
+			password
+		);
+		await sendEmailVerification(userCredential.user);
+		return userCredential;
 	}
 
 	function login(email, password) {

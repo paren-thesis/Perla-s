@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 function Login() {
 	const [isMounted, setIsMounted] = useState(false);
 	const [isLoginMode, setIsLoginMode] = useState(true);
-	const [username, setUsername] = useState("");
+	// Removed username for login
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [email, setEmail] = useState("");
@@ -26,20 +26,26 @@ function Login() {
 	// Redirect if user is already logged in
 	useEffect(() => {
 		if (currentUser) {
-			navigate("/menu");
+			if (currentUser.emailVerified) {
+				navigate("/menu");
+			} else {
+				setDialogMessage(
+					"Please verify your email before accessing the menu. Check your inbox for a verification link."
+				);
+				setShowSuccessDialog(true);
+			}
 		}
 	}, [currentUser, navigate]);
 
 	const validateForm = () => {
 		const newErrors = {};
 
-		if (!username.trim()) newErrors.username = "Username is required";
+		if (!email.trim()) newErrors.email = "Email is required";
+		else if (!/\S+@\S+\.\S+/.test(email))
+			newErrors.email = "Email is invalid";
 		if (!password.trim()) newErrors.password = "Password is required";
 
 		if (!isLoginMode) {
-			if (!email.trim()) newErrors.email = "Email is required";
-			else if (!/\S+@\S+\.\S+/.test(email))
-				newErrors.email = "Email is invalid";
 			if (password !== confirmPassword)
 				newErrors.confirmPassword = "Passwords do not match";
 			if (password.length < 6)
@@ -59,14 +65,14 @@ function Login() {
 		try {
 			if (isLoginMode) {
 				// Login logic
-				await login(email || `${username}@example.com`, password);
+				await login(email, password);
 				setDialogMessage("Login successful! Welcome back.");
 				setShowSuccessDialog(true);
 			} else {
 				// Sign up logic
 				await signup(email, password);
 				setDialogMessage(
-					"Account created successfully! Welcome to Perla's."
+					"Account created successfully! Please check your email and verify your account before logging in."
 				);
 				setShowSuccessDialog(true);
 			}
@@ -100,7 +106,6 @@ function Login() {
 
 	const toggleMode = () => {
 		setIsLoginMode(!isLoginMode);
-		setUsername("");
 		setPassword("");
 		setConfirmPassword("");
 		setEmail("");
@@ -119,7 +124,6 @@ function Login() {
 
 	const closeDialog = () => {
 		setShowSuccessDialog(false);
-		setUsername("");
 		setPassword("");
 		setConfirmPassword("");
 		setEmail("");
@@ -127,13 +131,10 @@ function Login() {
 
 	const isFormValid = () => {
 		if (isLoginMode) {
-			return (username.trim() || email.trim()) && password.trim();
+			return email.trim() && password.trim();
 		} else {
 			return (
-				username.trim() &&
-				email.trim() &&
-				password.trim() &&
-				password === confirmPassword
+				email.trim() && password.trim() && password === confirmPassword
 			);
 		}
 	};
@@ -170,75 +171,41 @@ function Login() {
 					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
-						{/* Username Field */}
+						{/* Email Field - Always show for login and signup */}
 						<div>
 							<label
-								htmlFor="username"
+								htmlFor="email"
 								className="block text-sm font-medium text-gray-700 mb-2"
 							>
-								Username
+								Email
 							</label>
 							<input
-								type="text"
-								id="username"
-								name="username"
-								value={username}
+								type="email"
+								id="email"
+								name="email"
+								value={email}
 								onChange={(e) => {
-									setUsername(e.target.value);
+									setEmail(e.target.value);
 									setErrors((prev) => ({
 										...prev,
-										username: "",
+										email: "",
 									}));
 								}}
-								placeholder="Enter your username"
+								placeholder="Enter your email"
 								className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
-									errors.username
+									errors.email
 										? "border-red-300"
 										: "border-gray-300"
 								}`}
 							/>
-							{errors.username && (
+							{errors.email && (
 								<p className="text-red-500 text-sm mt-1">
-									{errors.username}
+									{errors.email}
 								</p>
 							)}
 						</div>
 
-						{/* Email Field - Only for Sign Up */}
-						{!isLoginMode && (
-							<div>
-								<label
-									htmlFor="email"
-									className="block text-sm font-medium text-gray-700 mb-2"
-								>
-									Email
-								</label>
-								<input
-									type="email"
-									id="email"
-									name="email"
-									value={email}
-									onChange={(e) => {
-										setEmail(e.target.value);
-										setErrors((prev) => ({
-											...prev,
-											email: "",
-										}));
-									}}
-									placeholder="Enter your email"
-									className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
-										errors.email
-											? "border-red-300"
-											: "border-gray-300"
-									}`}
-								/>
-								{errors.email && (
-									<p className="text-red-500 text-sm mt-1">
-										{errors.email}
-									</p>
-								)}
-							</div>
-						)}
+						{/* ...existing code... */}
 
 						{/* Password Field */}
 						<div>
