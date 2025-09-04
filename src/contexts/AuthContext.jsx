@@ -47,6 +47,11 @@ export function AuthProvider({ children }) {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			setCurrentUser(user);
 			setLoading(false);
+
+			// Clear cart if user logs out
+			if (!user) {
+				localStorage.removeItem("perlasCart");
+			}
 		});
 
 		return unsubscribe;

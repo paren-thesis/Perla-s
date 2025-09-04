@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import MenuHeader from "../components/Menu/MenuHeader";
 import MenuGrid from "../components/Menu/MenuGrid";
 import Cart from "../components/Menu/Cart";
@@ -8,35 +9,65 @@ import ClearCartDialog from "../components/Menu/ClearCartDialog";
 import LoginRequiredDialog from "../components/Menu/LoginRequiredDialog";
 import menuItems from "../components/Menu/menuItems";
 
-
 function Menu() {
-  const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cartItems, setCartItems] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showClearCartDialog, setShowClearCartDialog] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCategoryChanging, setIsCategoryChanging] = useState(false);
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { currentUser } = useAuth();
+	const [selectedCategory, setSelectedCategory] = useState("all");
+	const [cartItems, setCartItems] = useState([]);
+	const [isCartOpen, setIsCartOpen] = useState(false);
+	const [showLoginDialog, setShowLoginDialog] = useState(false);
+	const [showClearCartDialog, setShowClearCartDialog] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isCategoryChanging, setIsCategoryChanging] = useState(false);
 
-  // Simulate initial loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+	// Simulate initial loading
+	useEffect(() => {
+		const savedCart = localStorage.getItem("perlasCart");
+		if (savedCart) {
+			setCartItems(JSON.parse(savedCart));
+		}
+	}, []);
 
-    return () => clearTimeout(timer);
-  }, []);
+	// Save cart items to localStorage whenever they change
+	useEffect(() => {
+		localStorage.setItem("perlasCart", JSON.stringify(cartItems));
+	}, [cartItems]);
 
-  // Handle category changes with loading state
-  const handleCategoryChange = (category) => {
-    setIsCategoryChanging(true);
-    setSelectedCategory(category);
-    
-    setTimeout(() => {
-      setIsCategoryChanging(false);
-    }, 800);
-  };
+	// Check for cart restoration after login redirect
+	useEffect(() => {
+		if (location.state?.fromLogin && cartItems.length > 0) {
+			setIsCartOpen(true);
+			// Clear the state to prevent reopening on refresh
+			window.history.replaceState({}, document.title);
+		}
+	}, [location.state, cartItems]);
+
+	// Simulate initial loading
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setIsLoading(false);
+		}, 1500);
+		return () => clearTimeout(timer);
+	}, []);
+
+	// Handle category changes with loading state
+	const handleCategoryChange = (category) => {
+		setIsCategoryChanging(true);
+		setSelectedCategory(category);
+
+		setTimeout(() => {
+			setIsCategoryChanging(false);
+		}, 800);
+	};
+
+	useEffect(() => {
+		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
+	}, [cartItems, isCartOpen]);
+
+	useEffect(() => {
+		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
+	}, [cartItems, isCartOpen]);
 
   useEffect(() => {
     if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
@@ -56,13 +87,15 @@ function Menu() {
     ];
   }, []);
 
-  const filteredItems = useMemo(
-    () =>
-      selectedCategory === "all"
-        ? menuItems
-        : menuItems.filter((item) => item.category === selectedCategory),
-    [selectedCategory]
-  );
+	const filteredItems = useMemo(
+		() =>
+			selectedCategory === "all"
+				? menuItems
+				: menuItems.filter(
+						(item) => item.category === selectedCategory
+				  ),
+		[selectedCategory]
+	);
 
   const addToCart = (item) => {
     setCartItems((prev) => {
@@ -91,6 +124,7 @@ function Menu() {
     );
   };
 
+
   const decrement = (id) => {
     setCartItems((prev) => {
       const target = prev.find((it) => it.id === id);
@@ -107,6 +141,7 @@ function Menu() {
   const clearCart = () => {
     setCartItems([]);
     setShowClearCartDialog(false);
+    localStorage.removeItem('perlasCart');
   };
 
   const handleSubmit = () => {
@@ -114,12 +149,26 @@ function Menu() {
       alert("Please add items to your cart first!");
       return;
     }
-    setShowLoginDialog(true);
+    
+    if (currentUser) {
+      // User is logged in, proceed to checkout
+      alert("Proceeding to checkout...");
+      // Add your checkout logic here
+    } else {
+      // User not logged in, show login dialog
+      setShowLoginDialog(true);
+    }
   };
 
   const handleLoginRedirect = () => {
     setShowLoginDialog(false);
-    navigate("/login");
+    // Pass cart items in state to restore after login
+    navigate("/login", { 
+      state: { 
+        from: 'menu',
+        cartItems: cartItems 
+      } 
+    });
   };
 
   const closeLoginDialog = () => {
@@ -155,92 +204,92 @@ function Menu() {
         />
       </div>
 
-      {/* Cart Toggle Buttons */}
-      {cartItems.length > 0 && (
-        <>
-          <CartToggleButton
-            totalQuantity={totalQuantity}
-            totalPrice={totalPrice}
-            onClick={() => setIsCartOpen(v => !v)}
-            isMobile={true}
-          />
-          <CartToggleButton
-            totalQuantity={totalQuantity}
-            totalPrice={totalPrice}
-            onClick={() => setIsCartOpen(v => !v)}
-            isMobile={false}
-          />
-        </>
-      )}
+			{/* Cart Toggle Buttons */}
+			{cartItems.length > 0 && (
+				<>
+					<CartToggleButton
+						totalQuantity={totalQuantity}
+						totalPrice={totalPrice}
+						onClick={() => setIsCartOpen((v) => !v)}
+						isMobile={true}
+					/>
+					<CartToggleButton
+						totalQuantity={totalQuantity}
+						totalPrice={totalPrice}
+						onClick={() => setIsCartOpen((v) => !v)}
+						isMobile={false}
+					/>
+				</>
+			)}
 
-      {/* Mobile Bottom Sheet Cart */}
-      {cartItems.length > 0 && isCartOpen && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 p-4">
-          <div className="relative">
-            <Cart
-              items={cartItems}
-              onIncrement={increment}
-              onDecrement={decrement}
-              onRemove={removeFromCart}
-              onSubmit={handleSubmit}
-              onClearCart={() => setShowClearCartDialog(true)}
-              isMobile={true}
-            />
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
-              title="Close"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+			{/* Mobile Bottom Sheet Cart */}
+			{cartItems.length > 0 && isCartOpen && (
+				<div className="lg:hidden fixed inset-x-0 bottom-0 z-50 p-4">
+					<div className="relative">
+						<Cart
+							items={cartItems}
+							onIncrement={increment}
+							onDecrement={decrement}
+							onRemove={removeFromCart}
+							onSubmit={handleSubmit}
+							onClearCart={() => setShowClearCartDialog(true)}
+							isMobile={true}
+						/>
+						<button
+							onClick={() => setIsCartOpen(false)}
+							className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
+							title="Close"
+						>
+							×
+						</button>
+					</div>
+				</div>
+			)}
 
-      {/* Desktop Modal Overlay Cart with Blur */}
-      {cartItems.length > 0 && isCartOpen && (
-        <div className="hidden lg:block fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setIsCartOpen(false)}
-          />
-          <div className="absolute top-24 right-8 w-[32rem] max-w-[92vw]">
-            <div className="relative">
-              <Cart
-                items={cartItems}
-                onIncrement={increment}
-                onDecrement={decrement}
-                onRemove={removeFromCart}
-                onSubmit={handleSubmit}
-                onClearCart={() => setShowClearCartDialog(true)}
-                isMobile={false}
-              />
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
-                title="Close"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+			{/* Desktop Modal Overlay Cart with Blur */}
+			{cartItems.length > 0 && isCartOpen && (
+				<div className="hidden lg:block fixed inset-0 z-50">
+					<div
+						className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+						onClick={() => setIsCartOpen(false)}
+					/>
+					<div className="absolute top-24 right-8 w-[32rem] max-w-[92vw]">
+						<div className="relative">
+							<Cart
+								items={cartItems}
+								onIncrement={increment}
+								onDecrement={decrement}
+								onRemove={removeFromCart}
+								onSubmit={handleSubmit}
+								onClearCart={() => setShowClearCartDialog(true)}
+								isMobile={false}
+							/>
+							<button
+								onClick={() => setIsCartOpen(false)}
+								className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
+								title="Close"
+							>
+								×
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
-      {/* Dialogs */}
-      <ClearCartDialog
-        isOpen={showClearCartDialog}
-        onClose={() => setShowClearCartDialog(false)}
-        onConfirm={clearCart}
-      />
+			{/* Dialogs */}
+			<ClearCartDialog
+				isOpen={showClearCartDialog}
+				onClose={() => setShowClearCartDialog(false)}
+				onConfirm={clearCart}
+			/>
 
-      <LoginRequiredDialog
-        isOpen={showLoginDialog}
-        onClose={closeLoginDialog}
-        onLoginRedirect={handleLoginRedirect}
-      />
-    </div>
-  );
+			<LoginRequiredDialog
+				isOpen={showLoginDialog}
+				onClose={closeLoginDialog}
+				onLoginRedirect={handleLoginRedirect}
+			/>
+		</div>
+	);
 }
 
 export default Menu;

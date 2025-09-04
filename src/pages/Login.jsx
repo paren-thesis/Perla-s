@@ -106,6 +106,17 @@ function Login() {
 		}
 	};
 
+	const handleLoginRedirect = () => {
+		setShowLoginDialog(false);
+		// Restore cart items and redirect back to menu
+		navigate("/menu", {
+			state: {
+				fromLogin: true,
+				cartItems: location.state?.cartItems || [],
+			},
+		});
+	};
+
 	const toggleMode = () => {
 		setIsLoginMode(!isLoginMode);
 		setPassword("");
