@@ -69,23 +69,35 @@ function Menu() {
 		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
 	}, [cartItems, isCartOpen]);
 
-  useEffect(() => {
-    if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
-  }, [cartItems, isCartOpen]);
+	useEffect(() => {
+		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
+	}, [cartItems, isCartOpen]);
 
-  const categories = useMemo(() => {
-    const counts = menuItems.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
-      return acc;
-    }, {});
-    return [
-      { label: "All", value: "all", count: menuItems.length },
-      { label: "Starters", value: "starters", count: counts["starters"] || 0 },
-      { label: "Breakfast", value: "breakfast", count: counts["breakfast"] || 0 },
-      { label: "Lunch", value: "lunch", count: counts["lunch"] || 0 },
-      { label: "Desserts", value: "desserts", count: counts["desserts"] || 0 },
-    ];
-  }, []);
+	const categories = useMemo(() => {
+		const counts = menuItems.reduce((acc, item) => {
+			acc[item.category] = (acc[item.category] || 0) + 1;
+			return acc;
+		}, {});
+		return [
+			{ label: "All", value: "all", count: menuItems.length },
+			{
+				label: "Starters",
+				value: "starters",
+				count: counts["starters"] || 0,
+			},
+			{
+				label: "Breakfast",
+				value: "breakfast",
+				count: counts["breakfast"] || 0,
+			},
+			{ label: "Lunch", value: "lunch", count: counts["lunch"] || 0 },
+			{
+				label: "Desserts",
+				value: "desserts",
+				count: counts["desserts"] || 0,
+			},
+		];
+	}, []);
 
 	const filteredItems = useMemo(
 		() =>
@@ -97,112 +109,120 @@ function Menu() {
 		[selectedCategory]
 	);
 
-  const addToCart = (item) => {
-    setCartItems((prev) => {
-      const found = prev.find((it) => it.id === item.id);
-      if (found) {
-        return prev.map((it) =>
-          it.id === item.id ? { ...it, quantity: it.quantity + 1 } : it
-        );
-      }
-      return [
-        ...prev,
-        {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          quantity: 1,
-        },
-      ];
-    });
-  };
+	const addToCart = (item) => {
+		setCartItems((prev) => {
+			const found = prev.find((it) => it.id === item.id);
+			if (found) {
+				return prev.map((it) =>
+					it.id === item.id
+						? { ...it, quantity: it.quantity + 1 }
+						: it
+				);
+			}
+			return [
+				...prev,
+				{
+					id: item.id,
+					name: item.name,
+					price: item.price,
+					image: item.image,
+					quantity: 1,
+				},
+			];
+		});
+	};
 
-  const increment = (id) => {
-    setCartItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, quantity: it.quantity + 1 } : it))
-    );
-  };
+	const increment = (id) => {
+		setCartItems((prev) =>
+			prev.map((it) =>
+				it.id === id ? { ...it, quantity: it.quantity + 1 } : it
+			)
+		);
+	};
 
+	const decrement = (id) => {
+		setCartItems((prev) => {
+			const target = prev.find((it) => it.id === id);
+			if (!target) return prev;
+			if (target.quantity <= 1) return prev.filter((it) => it.id !== id);
+			return prev.map((it) =>
+				it.id === id ? { ...it, quantity: it.quantity - 1 } : it
+			);
+		});
+	};
 
-  const decrement = (id) => {
-    setCartItems((prev) => {
-      const target = prev.find((it) => it.id === id);
-      if (!target) return prev;
-      if (target.quantity <= 1) return prev.filter((it) => it.id !== id);
-      return prev.map((it) => (it.id === id ? { ...it, quantity: it.quantity - 1 } : it));
-    });
-  };
+	const removeFromCart = (id) => {
+		setCartItems((prev) => prev.filter((it) => it.id !== id));
+	};
 
-  const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((it) => it.id !== id));
-  };
+	const clearCart = () => {
+		setCartItems([]);
+		setShowClearCartDialog(false);
+		localStorage.removeItem("perlasCart");
+	};
 
-  const clearCart = () => {
-    setCartItems([]);
-    setShowClearCartDialog(false);
-    localStorage.removeItem('perlasCart');
-  };
+	const handleSubmit = () => {
+		if (cartItems.length === 0) {
+			alert("Please add items to your cart first!");
+			return;
+		}
 
-  const handleSubmit = () => {
-    if (cartItems.length === 0) {
-      alert("Please add items to your cart first!");
-      return;
-    }
-    
-    if (currentUser) {
-      // User is logged in, proceed to checkout
-      alert("Proceeding to checkout...");
-      // Add your checkout logic here
-    } else {
-      // User not logged in, show login dialog
-      setShowLoginDialog(true);
-    }
-  };
+		if (currentUser) {
+			// User is logged in, proceed to checkout
+			alert("Proceeding to checkout...");
+			// Add your checkout logic here
+		} else {
+			// User not logged in, show login dialog
+			setShowLoginDialog(true);
+		}
+	};
 
-  const handleLoginRedirect = () => {
-    setShowLoginDialog(false);
-    // Pass cart items in state to restore after login
-    navigate("/login", { 
-      state: { 
-        from: 'menu',
-        cartItems: cartItems 
-      } 
-    });
-  };
+	const handleLoginRedirect = () => {
+		setShowLoginDialog(false);
+		// Pass cart items in state to restore after login
+		navigate("/login", {
+			state: {
+				from: "menu",
+				cartItems: cartItems,
+			},
+		});
+	};
 
-  const closeLoginDialog = () => {
-    setShowLoginDialog(false);
-  };
+	const closeLoginDialog = () => {
+		setShowLoginDialog(false);
+	};
 
-  const totalQuantity = useMemo(
-    () => cartItems.reduce((acc, it) => acc + it.quantity, 0),
-    [cartItems]
-  );
+	const totalQuantity = useMemo(
+		() => cartItems.reduce((acc, it) => acc + it.quantity, 0),
+		[cartItems]
+	);
 
-  const totalPrice = useMemo(
-    () => cartItems.reduce((acc, it) => acc + it.price * it.quantity, 0).toFixed(2),
-    [cartItems]
-  );
+	const totalPrice = useMemo(
+		() =>
+			cartItems
+				.reduce((acc, it) => acc + it.price * it.quantity, 0)
+				.toFixed(2),
+		[cartItems]
+	);
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-8">
-        <MenuHeader
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+	return (
+		<div className="min-h-screen bg-gray-50">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-8">
+				<MenuHeader
+					categories={categories}
+					selectedCategory={selectedCategory}
+					onCategoryChange={handleCategoryChange}
+				/>
 
-        <MenuGrid
-          isLoading={isLoading}
-          isCategoryChanging={isCategoryChanging}
-          filteredItems={filteredItems}
-          menuItems={menuItems}
-          selectedCategory={selectedCategory}
-          onAddToCart={addToCart}
-        />
-      </div>
+				<MenuGrid
+					isLoading={isLoading}
+					isCategoryChanging={isCategoryChanging}
+					filteredItems={filteredItems}
+					menuItems={menuItems}
+					selectedCategory={selectedCategory}
+					onAddToCart={addToCart}
+				/>
+			</div>
 
 			{/* Cart Toggle Buttons */}
 			{cartItems.length > 0 && (

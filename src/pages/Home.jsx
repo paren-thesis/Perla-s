@@ -5,14 +5,14 @@ import FrenchFriesSection from "../components/Home/FrenchFriesSection";
 import ServicesSection from "../components/Home/ServicesSection";
 
 function Home() {
-  return (
-    <div className="home">
-      <HeroSection />
-      <TopListSection />
-      <FrenchFriesSection />
-      <ServicesSection />
-    </div>
-  );
+	return (
+		<div className="home">
+			<HeroSection />
+			<TopListSection />
+			<FrenchFriesSection />
+			<ServicesSection />
+		</div>
+	);
 }
 
 export default Home;

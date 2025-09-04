@@ -23,14 +23,14 @@ function MenuGrid({
 			{isLoading || isCategoryChanging
 				? Array.from({ length: getSkeletonCount() }).map((_, index) => (
 						<MenuCardSkeleton key={`skeleton-${index}`} />
-				))
+				  ))
 				: filteredItems.map((item) => (
 						<MenuCard
 							key={item.id}
 							item={item}
 							onAdd={onAddToCart}
 						/>
-				))}
+				  ))}
 		</div>
 	);
 }
