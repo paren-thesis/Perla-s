@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 const Navbar = () => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
+	const [isAccountOpen, setIsAccountOpen] = useState(false); // New state for account dropdown
 	const location = useLocation();
 	const navigate = useNavigate();
 	const { currentUser, logout } = useAuth();
@@ -19,7 +20,14 @@ const Navbar = () => {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
-	const closeMenu = () => setIsOpen(false);
+	const closeMenu = () => {
+		setIsOpen(false);
+		setIsAccountOpen(false);
+	};
+
+	const toggleAccountDropdown = () => {
+		setIsAccountOpen(!isAccountOpen);
+	};
 
 	const isActive = (path) => location.pathname === path;
 
@@ -209,27 +217,69 @@ const Navbar = () => {
 
 						{currentUser ? (
 							<>
-								<div className="px-4 py-3 flex items-center space-x-3">
-									<div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-										<span className="text-white text-sm font-medium">
-											{currentUser.email
-												? currentUser.email[0].toUpperCase()
-												: "U"}
-										</span>
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium text-gray-900 truncate">
-											{currentUser.email || "User"}
-										</p>
+								{/* Mobile Account Section */}
+								<div className="px-4 py-3">
+									<button
+										onClick={toggleAccountDropdown}
+										className="w-full flex items-center space-x-3 text-left"
+									>
+										<div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+											<span className="text-white text-sm font-medium">
+												{currentUser.email
+													? currentUser.email[0].toUpperCase()
+													: "U"}
+											</span>
+										</div>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium text-gray-900 truncate">
+												{currentUser.email || "User"}
+											</p>
+										</div>
+										<svg
+											className={`w-4 h-4 text-gray-500 transform transition-transform duration-200 ${
+												isAccountOpen
+													? "rotate-180"
+													: ""
+											}`}
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M19 9l-7 7-7-7"
+											/>
+										</svg>
+									</button>
+
+									{/* Mobile Account Dropdown */}
+									<div
+										className={`mt-2 ml-11 space-y-2 transition-all duration-200 ${
+											isAccountOpen
+												? "max-h-32 opacity-100"
+												: "max-h-0 opacity-0 overflow-hidden"
+										}`}
+									>
+										<Link
+											to="/account"
+											onClick={closeMenu}
+											className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+										>
+											Account Settings
+										</Link>
+										<button
+											onClick={handleLogout}
+											disabled={isLoggingOut}
+											className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-lg transition-colors duration-200 disabled:opacity-50"
+										>
+											{isLoggingOut
+												? "Logging out..."
+												: "Logout"}
+										</button>
 									</div>
 								</div>
-								<button
-									onClick={handleLogout}
-									disabled={isLoggingOut}
-									className="w-full text-left px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 disabled:opacity-50"
-								>
-									{isLoggingOut ? "Logging out..." : "Logout"}
-								</button>
 							</>
 						) : (
 							<MobileNavLink
