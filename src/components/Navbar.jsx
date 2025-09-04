@@ -221,7 +221,7 @@ const Navbar = () => {
 								<div className="px-4 py-3">
 									<button
 										onClick={toggleAccountDropdown}
-										className="w-full flex items-center space-x-3 text-left"
+										className="w-full flex items-center space-x-3 text-left bg-primary-50 rounded-lg"
 									>
 										<div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
 											<span className="text-white text-sm font-medium">
@@ -265,14 +265,14 @@ const Navbar = () => {
 										<Link
 											to="/account"
 											onClick={closeMenu}
-											className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-lg transition-colors duration-200"
+											className="block px-3 py-2 text-sm text-gray-700 bg-primary-50 hover:bg-primary-100 hover:text-primary-600 rounded-lg transition-colors duration-200"
 										>
 											Account Settings
 										</Link>
 										<button
 											onClick={handleLogout}
 											disabled={isLoggingOut}
-											className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 rounded-lg transition-colors duration-200 disabled:opacity-50"
+											className="w-full text-left px-3 py-2 text-sm text-gray-700 bg-primary-50 hover:bg-primary-100 hover:text-primary-600 rounded-lg transition-colors duration-200 disabled:opacity-50"
 										>
 											{isLoggingOut
 												? "Logging out..."
