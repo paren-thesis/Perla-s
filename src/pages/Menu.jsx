@@ -238,9 +238,9 @@ function Menu() {
 						<button
 							onClick={() => setIsCartOpen(false)}
 							className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
-							title="Close"
+							title="Minimize"
 						>
-							×
+							-
 						</button>
 					</div>
 				</div>
@@ -267,9 +267,9 @@ function Menu() {
 							<button
 								onClick={() => setIsCartOpen(false)}
 								className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow border border-gray-200 text-secondary-900 hover:bg-gray-50"
-								title="Close"
+								title="Minimize"
 							>
-								×
+								-
 							</button>
 						</div>
 					</div>
