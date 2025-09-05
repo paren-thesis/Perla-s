@@ -28,9 +28,8 @@ const HeroSection = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 w-full">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Hero Content */}
-          <div className={`text-center lg:text-left space-y-6 sm:space-y-8 order-2 lg:order-1 transition-all duration-700 ease-out ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
+          <div className={`text-center lg:text-left space-y-6 sm:space-y-8 order-2 lg:order-1 transition-all duration-700 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}>
             <div className="space-y-4">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 <span className="text-secondary-900">Delicious Food</span>
@@ -38,7 +37,7 @@ const HeroSection = () => {
                 <span className="text-primary-600">Is Waiting For You</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed px-4 sm:px-0">
-                Our team of registered cooks and chefs provide you with the best continental dishes 
+                Our team of registered cooks and chefs provide you with the best continental dishes
                 and provide you with the best services to your satisfaction
               </p>
             </div>
@@ -79,15 +78,14 @@ const HeroSection = () => {
           </div>
 
           {/* Hero Visual */}
-          <div className={`relative order-1 lg:order-2 mb-8 lg:mb-0 transition-all duration-700 ease-out delay-150 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}>
-            <div className="relative z-10">
-              <div className="w-64 h-64 sm:w-80 sm:h-80 mx-auto lg:ml-auto bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center shadow-2xl">
-                <FaUtensils className="text-white text-6xl sm:text-8xl" />
-              </div>
-            </div>
-            
+          <div className={`relative order-1 lg:order-2 mb-8 lg:mb-0 transition-all duration-700 ease-out delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}>
+            <img
+              src="/images/jollof1.png"
+              alt="Jollof Rice"
+              className="w-64 h-64 sm:w-80 sm:h-80 mx-auto lg:ml-auto rounded-full shadow-2xl object-cover"
+            />
+
             {/* Floating Elements - Constrained within container */}
             <div className="absolute top-8 sm:top-10 left-0 sm:-left-8 lg:-left-10 w-16 h-16 sm:w-20 sm:h-20 bg-secondary-200 rounded-full flex items-center justify-center shadow-lg animate-bounce">
               <div className="w-2 h-2 sm:w-3 sm:h-3 bg-secondary-600 rounded-full"></div>
