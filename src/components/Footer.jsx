@@ -1,7 +1,24 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const Footer = () => {
+	const { currentUser, logout } = useAuth();
+	const navigate = useNavigate();
+	const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+	const handleLogout = async () => {
+		try {
+			setIsLoggingOut(true);
+			await logout();
+			navigate("/");
+		} catch (error) {
+			console.error("Failed to log out:", error);
+		} finally {
+			setIsLoggingOut(false);
+		}
+	};
+
 	return (
 		<footer className="bg-secondary-900 text-gray-100 mt-auto">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -50,12 +67,22 @@ const Footer = () => {
 								</Link>
 							</li>
 							<li>
-								<Link
-									to="/login"
-									className="text-gray-300 hover:text-primary-400 transition-colors duration-200 text-sm"
-								>
-									Login
-								</Link>
+								{currentUser ? (
+									<button
+										onClick={handleLogout}
+										disabled={isLoggingOut}
+										className="text-gray-300 hover:text-primary-400 transition-colors duration-200 text-sm bg-transparent border-none cursor-pointer"
+									>
+										{isLoggingOut ? "Logging out..." : "Logout"}
+									</button>
+								) : (
+									<Link
+										to="/login"
+										className="text-gray-300 hover:text-primary-400 transition-colors duration-200 text-sm"
+									>
+										Login
+									</Link>
+								)}
 							</li>
 						</ul>
 					</div>
