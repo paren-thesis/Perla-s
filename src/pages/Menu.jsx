@@ -96,6 +96,11 @@ function Menu() {
 				value: "desserts",
 				count: counts["desserts"] || 0,
 			},
+			{
+				label: "Beverages",
+				value: "beverages",
+				count: counts["beverages"] || 0,
+			},
 		];
 	}, []);
 
@@ -104,8 +109,8 @@ function Menu() {
 			selectedCategory === "all"
 				? menuItems
 				: menuItems.filter(
-						(item) => item.category === selectedCategory
-				  ),
+					(item) => item.category === selectedCategory
+				),
 		[selectedCategory]
 	);
 

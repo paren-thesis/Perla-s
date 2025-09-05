@@ -79,6 +79,47 @@ export const menuItems = [
 		description: "Crispy vegetable spring rolls",
 		image: "/images/foods/spring_rolls.jpg",
 	},
+	// Beverages
+	{
+		id: 11,
+		name: "Iced Coffee",
+		category: "beverages",
+		price: 5.99,
+		description: "Chilled coffee with ice and milk",
+		image: "/images/foods/iced_coffee.jpeg",
+	},
+	{
+		id: 12,
+		name: "Ice Cream Sundae",
+		category: "beverages",
+		price: 6.99,
+		description: "Classic ice cream sundae with toppings",
+		image: "/images/foods/icecreamsundae.jpg",
+	},
+	{
+		id: 13,
+		name: "Mango Smoothie",
+		category: "beverages",
+		price: 5.49,
+		description: "Fresh mango smoothie",
+		image: "/images/foods/mangosmoothie.jpg",
+	},
+	{
+		id: 14,
+		name: "Fresh Orange Juice",
+		category: "beverages",
+		price: 4.99,
+		description: "Freshly squeezed orange juice",
+		image: "/images/foods/freshorangejuice.jpeg",
+	},
+	{
+		id: 15,
+		name: "Strawberry Milkshake",
+		category: "beverages",
+		price: 5.99,
+		description: "Creamy strawberry milkshake",
+		image: "/images/foods/strawberry_milkshake.jpg",
+	},
 ];
 
 export default menuItems;
