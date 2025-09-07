@@ -13,7 +13,7 @@ const HeroSection = () => {
   }, []);
 
   const handleBookTable = () => {
-    alert("Table booking feature coming soon!");
+    navigate("/book-table");
   };
 
   return (

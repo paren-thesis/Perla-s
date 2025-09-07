@@ -65,14 +65,6 @@ function Menu() {
 		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
 	}, [cartItems, isCartOpen]);
 
-	useEffect(() => {
-		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
-	}, [cartItems, isCartOpen]);
-
-	useEffect(() => {
-		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
-	}, [cartItems, isCartOpen]);
-
 	const categories = useMemo(() => {
 		const counts = menuItems.reduce((acc, item) => {
 			acc[item.category] = (acc[item.category] || 0) + 1;

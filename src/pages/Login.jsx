@@ -1,6 +1,6 @@
 // Updated Login.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import AuthFormHeader from "../components/Auth/AuthFormHeader";
 import AuthFormCard from "../components/Auth/AuthFormCard";
@@ -20,6 +20,7 @@ function Login() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState({});
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { login, signup, googleSignIn, currentUser } = useAuth();
 
 	useEffect(() => {
@@ -31,7 +32,9 @@ function Login() {
 	useEffect(() => {
 		if (currentUser) {
 			if (currentUser.emailVerified) {
-				navigate("/menu");
+				// Check if user came from booking page
+				const returnTo = location.state?.returnTo || "/menu";
+				navigate(returnTo);
 			} else {
 				setDialogMessage(
 					"Please verify your email before accessing the menu. Check your inbox for a verification link."
@@ -39,7 +42,7 @@ function Login() {
 				setShowSuccessDialog(true);
 			}
 		}
-	}, [currentUser, navigate]);
+	}, [currentUser, navigate, location.state]);
 
 	const validateForm = () => {
 		const newErrors = {};
@@ -285,7 +288,8 @@ function Login() {
 				onClose={closeDialog}
 				onNavigateToMenu={() => {
 					closeDialog();
-					navigate("/menu");
+					const returnTo = location.state?.returnTo || "/menu";
+					navigate(returnTo);
 				}}
 			/>
 		</div>
