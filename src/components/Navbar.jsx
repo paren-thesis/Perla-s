@@ -88,6 +88,13 @@ const Navbar = () => {
 							Menu
 						</NavLink>
 						<NavLink
+							to="/book-table"
+							isActive={isActive}
+							onClick={closeMenu}
+						>
+							Book a Table
+						</NavLink>
+						<NavLink
 							to="/about"
 							isActive={isActive}
 							onClick={closeMenu}
@@ -149,9 +156,12 @@ const Navbar = () => {
 
 					{/* CTA Button */}
 					<div className="hidden lg:block">
-						<button className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 hover:from-primary-600 hover:to-primary-700">
-							Book a Table
-						</button>
+						<Link
+							to="/book-table"
+							className="inline-block bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 hover:from-primary-600 hover:to-primary-700"
+						>
+							Reserve Now
+						</Link>
 					</div>
 
 					{/* Mobile menu button */}
@@ -206,6 +216,13 @@ const Navbar = () => {
 							onClick={closeMenu}
 						>
 							Menu
+						</MobileNavLink>
+						<MobileNavLink
+							to="/book-table"
+							isActive={isActive}
+							onClick={closeMenu}
+						>
+							Book a Table
 						</MobileNavLink>
 						<MobileNavLink
 							to="/about"
@@ -292,9 +309,13 @@ const Navbar = () => {
 						)}
 
 						<div className="pt-4">
-							<button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-								Book a Table
-							</button>
+							<Link
+								to="/book-table"
+								onClick={closeMenu}
+								className="block w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-center"
+							>
+								Reserve Now
+							</Link>
 						</div>
 					</div>
 				</div>
