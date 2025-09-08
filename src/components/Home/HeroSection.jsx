@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUtensils, FaCalendarAlt } from 'react-icons/fa';
+import { HeroImage } from '../OptimizedImage';
+import { FALLBACK_IMAGES } from '../../utils/imageUtils';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -80,10 +82,12 @@ const HeroSection = () => {
           {/* Hero Visual */}
           <div className={`relative order-1 lg:order-2 mb-8 lg:mb-0 transition-all duration-700 ease-out delay-150 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}>
-            <img
+            <HeroImage
               src="/images/jollof1.png"
-              alt="Jollof Rice"
-              className="w-64 h-64 sm:w-80 sm:h-80 mx-auto lg:ml-auto rounded-full shadow-2xl object-cover"
+              alt="Delicious Jollof Rice - Perla's Restaurant signature dish"
+              className="w-64 h-64 sm:w-80 sm:h-80 mx-auto lg:ml-auto object-cover"
+              fallbackSrc={FALLBACK_IMAGES.hero}
+              priority={true}
             />
 
             {/* Floating Elements - Constrained within container */}

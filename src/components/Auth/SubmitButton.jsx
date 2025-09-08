@@ -1,4 +1,5 @@
 import React from "react";
+import { getPasswordStrength } from "../../utils/authErrors";
 
 function SubmitButton({ isLoading, isLoginMode, disabled }) {
 	return (

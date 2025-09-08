@@ -1,4 +1,6 @@
 import React from "react";
+import { TeamMemberImage } from "../OptimizedImage";
+import { FALLBACK_IMAGES } from "../../utils/imageUtils";
 
 const team = [
 	{
@@ -44,8 +46,13 @@ const AboutTeam = () => {
 							key={index}
 							className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow duration-300"
 						>
-							<div className="h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-								<div className="text-6xl">👨‍🍳</div>
+							<div className="h-48 overflow-hidden">
+								<TeamMemberImage
+									src={member.image}
+									alt={`${member.name} - ${member.role}`}
+									className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+									fallbackSrc={FALLBACK_IMAGES.team}
+								/>
 							</div>
 							<div className="p-6">
 								<h3 className="text-xl font-bold text-secondary-900 mb-1">

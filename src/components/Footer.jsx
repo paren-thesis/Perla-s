@@ -10,10 +10,14 @@ const Footer = () => {
 	const handleLogout = async () => {
 		try {
 			setIsLoggingOut(true);
-			await logout();
-			navigate("/");
+			const result = await logout();
+			if (result.success) {
+				navigate("/");
+			}
 		} catch (error) {
-			console.error("Failed to log out:", error);
+			console.error("Failed to log out:", error.message || error);
+			// Still navigate to home even if there's an error
+			navigate("/");
 		} finally {
 			setIsLoggingOut(false);
 		}

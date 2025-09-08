@@ -7,7 +7,9 @@ import Cart from "../components/Menu/Cart";
 import CartToggleButton from "../components/Menu/CartToggleButton";
 import ClearCartDialog from "../components/Menu/ClearCartDialog";
 import LoginRequiredDialog from "../components/Menu/LoginRequiredDialog";
+import LoadingProgress from "../components/LoadingProgress";
 import menuItems from "../components/Menu/menuItems";
+import { useImagePreloader } from "../hooks/useImagePreloader";
 
 function Menu() {
 	const navigate = useNavigate();
@@ -21,7 +23,25 @@ function Menu() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCategoryChanging, setIsCategoryChanging] = useState(false);
 
-	// Simulate initial loading
+
+	// Extract all image sources for preloading
+	const allImageSources = useMemo(() => {
+		return menuItems.map(item => item.image);
+	}, []);
+
+	// Get priority images (first few items or featured items)
+	const priorityImages = useMemo(() => {
+		return menuItems.slice(0, 6).map(item => item.image);
+	}, []);
+
+	// Use image preloader
+	const imagePreloader = useImagePreloader(allImageSources, {
+		priority: priorityImages,
+		batchSize: 4,
+		delay: 200
+	});
+
+	// Reduce initial loading time and consider image loading progress
 	useEffect(() => {
 		const savedCart = localStorage.getItem("perlasCart");
 		if (savedCart) {
@@ -47,7 +67,7 @@ function Menu() {
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setIsLoading(false);
-		}, 1500);
+		}, 800); // Reduced from 1500ms
 		return () => clearTimeout(timer);
 	}, []);
 
@@ -58,7 +78,7 @@ function Menu() {
 
 		setTimeout(() => {
 			setIsCategoryChanging(false);
-		}, 800);
+		}, 400);
 	};
 
 	useEffect(() => {
@@ -204,6 +224,12 @@ function Menu() {
 
 	return (
 		<div className="min-h-screen bg-gray-50">
+			<LoadingProgress
+				progress={imagePreloader.stats.progress}
+				isVisible={imagePreloader.isLoading && imagePreloader.stats.progress < 100}
+				message={`Loading menu images... (${imagePreloader.stats.loaded}/${imagePreloader.stats.total})`}
+				showPercentage={true}
+			/>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-8">
 				<MenuHeader
 					categories={categories}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getPasswordStrength } from "../../utils/authErrors";
 
 function PasswordField({
 	id,
@@ -20,16 +21,20 @@ function PasswordField({
 	const getPasswordStrength = (password) => {
 		if (!password)
 			return { strength: "", width: "0%", color: "bg-gray-200" };
-		if (password.length >= 6)
-			return { strength: "Strong", width: "100%", color: "bg-green-500" };
-		return {
-			strength: "Weak",
-			width: `${(password.length / 6) * 100}%`,
-			color: "bg-yellow-500",
-		};
+		const strength = getPasswordStrength(password);
+		switch (strength) {
+			case "weak":
+				return { strength: "Weak", width: "33%", color: "bg-red-500" };
+			case "medium":
+				return { strength: "Medium", width: "66%", color: "bg-yellow-500" };
+			case "strong":
+				return { strength: "Strong", width: "100%", color: "bg-green-500" };
+			default:
+				return { strength: "", width: "0%", color: "bg-gray-200" };
+		}
 	};
 
-	const strength = showStrengthIndicator ? getPasswordStrength(value) : null;
+	const strength = showStrengthIndicator ? getPasswordStrengthDisplay(value) : null;
 
 	return (
 		<div>
@@ -47,9 +52,8 @@ function PasswordField({
 					value={value}
 					onChange={onChange}
 					placeholder={placeholder}
-					className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
-						error ? "border-red-300" : "border-gray-300"
-					}`}
+					className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${error ? "border-red-300" : "border-gray-300"
+						}`}
 				/>
 				<button
 					type="button"

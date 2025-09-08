@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { validatePassword, isValidEmail } from "../utils/authErrors";
 import AuthFormHeader from "../components/Auth/AuthFormHeader";
 import AuthFormCard from "../components/Auth/AuthFormCard";
 import PasswordField from "../components/Auth/PasswordField";
 import GoogleSignInButton from "../components/Auth/GoogleSignInButton";
 import SuccessDialog from "../components/Auth/SuccessDialog";
 import SubmitButton from "../components/Auth/SubmitButton";
+import EmailVerificationDialog from "../components/Auth/EmailVerificationDialog";
+import PasswordResetDialog from "../components/Auth/PasswordResetDialog";
 
 function Login() {
 	const [isMounted, setIsMounted] = useState(false);
@@ -16,47 +19,67 @@ function Login() {
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [email, setEmail] = useState("");
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+	const [showVerificationDialog, setShowVerificationDialog] = useState(false);
+	const [showPasswordResetDialog, setShowPasswordResetDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [errors, setErrors] = useState({});
+	const [unverifiedUser, setUnverifiedUser] = useState(null);
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { login, signup, googleSignIn, currentUser } = useAuth();
+	const {
+		login,
+		signup,
+		googleSignIn,
+		currentUser,
+		resetPassword,
+		resendVerificationEmail,
+		checkEmailVerification,
+		logout
+	} = useAuth();
 
 	useEffect(() => {
 		const timer = setTimeout(() => setIsMounted(true), 100);
 		return () => clearTimeout(timer);
 	}, []);
 
-	// Redirect if user is already logged in
+	// Redirect if user is already logged in and verified
 	useEffect(() => {
-		if (currentUser) {
-			if (currentUser.emailVerified) {
-				// Check if user came from booking page
-				const returnTo = location.state?.returnTo || "/menu";
-				navigate(returnTo);
-			} else {
-				setDialogMessage(
-					"Please verify your email before accessing the menu. Check your inbox for a verification link."
-				);
-				setShowSuccessDialog(true);
-			}
+		if (currentUser && currentUser.emailVerified) {
+			const returnTo = location.state?.returnTo || "/menu";
+			navigate(returnTo);
+		} else if (currentUser && !currentUser.emailVerified) {
+			// Show verification dialog for unverified users
+			setUnverifiedUser(currentUser);
+			setShowVerificationDialog(true);
 		}
 	}, [currentUser, navigate, location.state]);
 
 	const validateForm = () => {
 		const newErrors = {};
 
-		if (!email.trim()) newErrors.email = "Email is required";
-		else if (!/\S+@\S+\.\S+/.test(email))
-			newErrors.email = "Email is invalid";
-		if (!password.trim()) newErrors.password = "Password is required";
+		// Email validation
+		if (!email.trim()) {
+			newErrors.email = "Email is required";
+		} else if (!isValidEmail(email)) {
+			newErrors.email = "Please enter a valid email address";
+		}
 
+		// Password validation
+		if (!password.trim()) {
+			newErrors.password = "Password is required";
+		}
+
+		// Additional validation for signup
 		if (!isLoginMode) {
-			if (password !== confirmPassword)
+			const passwordValidation = validatePassword(password);
+			if (!passwordValidation.isValid) {
+				newErrors.password = passwordValidation.errors[0];
+			}
+
+			if (password !== confirmPassword) {
 				newErrors.confirmPassword = "Passwords do not match";
-			if (password.length < 6)
-				newErrors.password = "Password should be at least 6 characters";
+			}
 		}
 
 		setErrors(newErrors);
@@ -68,24 +91,31 @@ function Login() {
 		if (!validateForm()) return;
 
 		setIsLoading(true);
+		setErrors({});
 
 		try {
 			if (isLoginMode) {
-				await login(email, password);
-				setDialogMessage("Login successful! Welcome back.");
-				setShowSuccessDialog(true);
+				const result = await login(email, password);
+				if (result.success) {
+					setDialogMessage(result.message);
+					setShowSuccessDialog(true);
+				} else if (result.needsVerification) {
+					// User exists but email not verified
+					setUnverifiedUser(result.user);
+					setShowVerificationDialog(true);
+				}
 			} else {
-				await signup(email, password);
-				setDialogMessage(
-					"Account created successfully! Please check your email and verify your account before logging in."
-				);
+				const result = await signup(email, password);
+				setDialogMessage(result.message);
 				setShowSuccessDialog(true);
+				// Clear form after successful signup
+				setPassword("");
+				setConfirmPassword("");
 			}
 		} catch (error) {
 			console.error("Authentication error:", error);
 			setErrors({
-				submit:
-					error.message || "An error occurred during authentication",
+				submit: error.message || "An unexpected error occurred. Please try again."
 			});
 		} finally {
 			setIsLoading(false);
@@ -95,44 +125,54 @@ function Login() {
 	const handleGoogleSignIn = async () => {
 		try {
 			setIsLoading(true);
-			await googleSignIn();
-			setDialogMessage("Login with Google successful!");
+			setErrors({});
+			const result = await googleSignIn();
+			setDialogMessage(result.message);
 			setShowSuccessDialog(true);
 		} catch (error) {
 			console.error("Google sign-in error:", error);
 			setErrors({
-				submit:
-					error.message || "An error occurred during Google sign-in",
+				submit: error.message || "An error occurred during Google sign-in",
 			});
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const handleLoginRedirect = () => {
-		setShowLoginDialog(false);
-		// Restore cart items and redirect back to menu
-		navigate("/menu", {
-			state: {
-				fromLogin: true,
-				cartItems: location.state?.cartItems || [],
-			},
-		});
+	// Handle forgot password
+	const handleForgotPassword = () => {
+		setShowPasswordResetDialog(true);
+	};
+
+	// Handle verification dialog actions
+	const handleResendVerification = async () => {
+		return await resendVerificationEmail();
+	};
+
+	const handleCheckVerification = async () => {
+		return await checkEmailVerification();
+	};
+
+	const handleSignOut = async () => {
+		await logout();
+		setUnverifiedUser(null);
 	};
 
 	const toggleMode = () => {
 		setIsLoginMode(!isLoginMode);
 		setPassword("");
 		setConfirmPassword("");
-		setEmail("");
 		setErrors({});
 	};
 
 	const closeDialog = () => {
 		setShowSuccessDialog(false);
-		setPassword("");
-		setConfirmPassword("");
-		setEmail("");
+		if (!isLoginMode) {
+			// Clear form after successful signup
+			setEmail("");
+			setPassword("");
+			setConfirmPassword("");
+		}
 	};
 
 	const isFormValid = () => {
@@ -145,15 +185,10 @@ function Login() {
 		}
 	};
 
-	const handleForgotPassword = () => {
-		alert("Forgot password feature coming soon!");
-	};
-
 	return (
 		<div
-			className={`min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 flex items-center justify-center px-4 py-12 pt-24 md:pt-28 transition-all duration-700 ease-out ${
-				isMounted ? "opacity-100" : "opacity-0"
-			}`}
+			className={`min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 flex items-center justify-center px-4 py-12 pt-24 md:pt-28 transition-all duration-700 ease-out ${isMounted ? "opacity-100" : "opacity-0"
+				}`}
 		>
 			<div className="max-w-md w-full">
 				<AuthFormHeader isLoginMode={isLoginMode} />
@@ -187,11 +222,10 @@ function Login() {
 									}));
 								}}
 								placeholder="Enter your email"
-								className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${
-									errors.email
-										? "border-red-300"
-										: "border-gray-300"
-								}`}
+								className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 placeholder-gray-400 ${errors.email
+									? "border-red-300"
+									: "border-gray-300"
+									}`}
 							/>
 							{errors.email && (
 								<p className="text-red-500 text-sm mt-1">
@@ -291,6 +325,25 @@ function Login() {
 					const returnTo = location.state?.returnTo || "/menu";
 					navigate(returnTo);
 				}}
+			/>
+
+
+			{/* Email Verification Dialog */}
+			<EmailVerificationDialog
+				isOpen={showVerificationDialog}
+				onClose={() => setShowVerificationDialog(false)}
+				userEmail={unverifiedUser?.email || email}
+				onResendVerification={handleResendVerification}
+				onCheckVerification={handleCheckVerification}
+				onSignOut={handleSignOut}
+			/>
+
+			{/* Password Reset Dialog */}
+			<PasswordResetDialog
+				isOpen={showPasswordResetDialog}
+				onClose={() => setShowPasswordResetDialog(false)}
+				onResetPassword={resetPassword}
+				initialEmail={email}
 			/>
 		</div>
 	);
