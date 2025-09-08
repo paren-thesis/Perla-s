@@ -190,6 +190,19 @@ const LocationAccess = ({
         </div>
       )}
 
+      {/* Free Service Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start">
+          <FaMapMarkerAlt className="mr-2 mt-0.5 text-blue-500" />
+          <div>
+            <p className="font-medium text-blue-800">Free Location Service</p>
+            <p className="text-sm text-blue-700 mt-1">
+              This app uses OpenStreetMap and Nominatim for location services - completely free with no API keys required!
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Location Picker Modal */}
       <LocationPicker
         isOpen={showLocationPicker}

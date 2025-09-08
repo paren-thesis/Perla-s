@@ -1,8 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaMapMarkerAlt, FaSearch, FaTimes, FaCheck } from 'react-icons/fa';
-import { initializeGoogleMaps, geocodeAddress } from '../../services/locationService';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import { FaMapMarkerAlt, FaSearch, FaTimes, FaCheck, FaSpinner } from 'react-icons/fa';
+import { geocodeAddress, searchAddresses, reverseGeocode } from '../../services/locationService';
 
-const LocationPicker = ({ 
+// Fix for default markers in react-leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom marker icon
+const createCustomIcon = (color = '#3B82F6') => {
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="
+      background-color: ${color};
+      width: 30px;
+      height: 30px;
+      border-radius: 50% 50% 50% 0;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transform: rotate(-45deg);
+    "></div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -30]
+  });
+};
+
+// Map click handler component
+const MapClickHandler = ({ onLocationSelect }) => {
+  useMapEvents({
+    click: async (e) => {
+      const { lat, lng } = e.latlng;
+      try {
+        const address = await reverseGeocode(lat, lng);
+        onLocationSelect({
+          coordinates: { lat, lng },
+          address: address
+        });
+      } catch (error) {
+        console.error('Error getting address:', error);
+        onLocationSelect({
+          coordinates: { lat, lng },
+          address: 'Selected location'
+        });
+      }
+    }
+  });
+  return null;
+};
+
+const FreeLocationPicker = ({ 
   isOpen, 
   onClose, 
   onLocationSelect, 
@@ -16,100 +68,9 @@ const LocationPicker = ({
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
   const [error, setError] = useState('');
-  const mapRef = useRef(null);
-  const searchTimeoutRef = useRef(null);
+  const [mapCenter, setMapCenter] = useState(initialLocation?.coordinates || { lat: 5.6037, lng: -0.1870 });
 
-  // Initialize map when component mounts
-  useEffect(() => {
-    if (isOpen && mapRef.current) {
-      initializeMap();
-    }
-  }, [isOpen]);
-
-  // Update marker when selected location changes
-  useEffect(() => {
-    if (map && selectedLocation) {
-      updateMarker(selectedLocation);
-    }
-  }, [map, selectedLocation]);
-
-  const initializeMap = async () => {
-    try {
-      const google = await initializeGoogleMaps();
-      
-      const mapOptions = {
-        center: selectedLocation?.coordinates || { lat: 5.6037, lng: -0.1870 },
-        zoom: 15,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
-      };
-
-      const newMap = new google.maps.Map(mapRef.current, mapOptions);
-      setMap(newMap);
-
-      // Add click listener to map
-      newMap.addListener('click', (event) => {
-        const location = {
-          coordinates: {
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          },
-          address: 'Selected location'
-        };
-        setSelectedLocation(location);
-      });
-
-      // Add initial marker if location is provided
-      if (selectedLocation) {
-        updateMarker(selectedLocation);
-      }
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      setError('Failed to load map. Please try again.');
-    }
-  };
-
-  const updateMarker = (location) => {
-    if (!map) return;
-
-    // Remove existing marker
-    if (marker) {
-      marker.setMap(null);
-    }
-
-    // Create new marker
-    const google = window.google;
-    const newMarker = new google.maps.Marker({
-      position: location.coordinates,
-      map: map,
-      title: location.address,
-      draggable: true,
-      animation: google.maps.Animation.DROP
-    });
-
-    // Add drag listener
-    newMarker.addListener('dragend', () => {
-      const position = newMarker.getPosition();
-      const newLocation = {
-        coordinates: {
-          lat: position.lat(),
-          lng: position.lng()
-        },
-        address: 'Selected location'
-      };
-      setSelectedLocation(newLocation);
-    });
-
-    setMarker(newMarker);
-  };
-
+  // Search for addresses
   const handleSearch = async (query) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -120,8 +81,8 @@ const LocationPicker = ({
     setError('');
 
     try {
-      const result = await geocodeAddress(query);
-      setSearchResults([result]);
+      const results = await searchAddresses(query, 5);
+      setSearchResults(results);
     } catch (error) {
       console.error('Search error:', error);
       setError('Address not found. Please try a different search.');
@@ -134,27 +95,23 @@ const LocationPicker = ({
     const query = e.target.value;
     setSearchQuery(query);
 
-    // Clear previous timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // Set new timeout for search
-    searchTimeoutRef.current = setTimeout(() => {
+    // Debounce search
+    const timeoutId = setTimeout(() => {
       handleSearch(query);
     }, 500);
+
+    return () => clearTimeout(timeoutId);
   };
 
   const handleSearchResultClick = (result) => {
     setSelectedLocation(result);
     setSearchQuery(result.address);
     setSearchResults([]);
-    
-    // Center map on selected location
-    if (map) {
-      map.setCenter(result.coordinates);
-      map.setZoom(15);
-    }
+    setMapCenter(result.coordinates);
+  };
+
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
   };
 
   const handleConfirmLocation = () => {
@@ -170,6 +127,13 @@ const LocationPicker = ({
     setError('');
     onClose();
   };
+
+  // Update marker when location changes
+  useEffect(() => {
+    if (selectedLocation && map) {
+      setMarker(selectedLocation);
+    }
+  }, [selectedLocation, map]);
 
   if (!isOpen) return null;
 
@@ -203,7 +167,7 @@ const LocationPicker = ({
             />
             {isSearching && (
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
+                <FaSpinner className="animate-spin text-primary-500" />
               </div>
             )}
           </div>
@@ -218,6 +182,9 @@ const LocationPicker = ({
                   className="w-full text-left p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
                 >
                   <div className="font-medium text-gray-900">{result.address}</div>
+                  {result.type && (
+                    <div className="text-sm text-gray-500">{result.type}</div>
+                  )}
                 </button>
               ))}
             </div>
@@ -226,7 +193,35 @@ const LocationPicker = ({
 
         {/* Map Container */}
         <div className="flex-1 relative">
-          <div ref={mapRef} className="w-full h-full rounded-b-2xl" />
+          <MapContainer
+            center={mapCenter}
+            zoom={15}
+            style={{ height: '100%', width: '100%' }}
+            whenCreated={setMap}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            <MapClickHandler onLocationSelect={handleLocationSelect} />
+            
+            {marker && (
+              <Marker
+                position={marker.coordinates}
+                icon={createCustomIcon('#3B82F6')}
+              >
+                <Popup>
+                  <div className="text-center">
+                    <p className="font-medium">{marker.address}</p>
+                    <p className="text-sm text-gray-500">
+                      {marker.coordinates.lat.toFixed(4)}, {marker.coordinates.lng.toFixed(4)}
+                    </p>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+          </MapContainer>
           
           {/* Map Instructions */}
           <div className="absolute top-4 left-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
@@ -281,4 +276,4 @@ const LocationPicker = ({
   );
 };
 
-export default LocationPicker;
+export default FreeLocationPicker;

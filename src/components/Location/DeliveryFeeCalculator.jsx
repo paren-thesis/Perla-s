@@ -122,11 +122,16 @@ const DeliveryFeeCalculator = ({
             <FaTruck className="mr-2 text-primary-500" />
             Delivery Information
           </h3>
-          {deliveryInfo.fee === 0 && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Free Delivery
+          <div className="flex items-center space-x-2">
+            {deliveryInfo.fee === 0 && (
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Free Delivery
+              </span>
+            )}
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              Free Service
             </span>
-          )}
+          </div>
         </div>
 
         {/* Delivery Details */}
@@ -202,6 +207,19 @@ const DeliveryFeeCalculator = ({
                 </div>
               </div>
             )}
+
+            {/* Free Service Notice */}
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-start">
+                <FaInfoCircle className="mr-2 mt-0.5 text-blue-500" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800">Powered by OpenStreetMap</p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    This service uses free, open-source mapping data. No API keys or paid services required!
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

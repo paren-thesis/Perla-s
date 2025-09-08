@@ -1,34 +1,5 @@
-import { Loader } from '@googlemaps/js-api-loader';
-
-// Google Maps API configuration
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-// Initialize Google Maps loader
-const loader = new Loader({
-  apiKey: GOOGLE_MAPS_API_KEY,
-  version: 'weekly',
-  libraries: ['places', 'geometry']
-});
-
-// Cache for Google Maps instance
-let googleMapsInstance = null;
-
-/**
- * Initialize Google Maps
- */
-export const initializeGoogleMaps = async () => {
-  if (googleMapsInstance) {
-    return googleMapsInstance;
-  }
-
-  try {
-    googleMapsInstance = await loader.load();
-    return googleMapsInstance;
-  } catch (error) {
-    console.error('Error loading Google Maps:', error);
-    throw new Error('Failed to load Google Maps');
-  }
-};
+// Location service using OpenStreetMap and Nominatim
+// No API key required - completely free!
 
 /**
  * Get current location using GPS
@@ -86,28 +57,33 @@ export const getCurrentLocation = () => {
 };
 
 /**
- * Reverse geocode coordinates to get address
+ * Reverse geocode coordinates to get address using Nominatim (OpenStreetMap)
  * @param {number} lat - Latitude
  * @param {number} lng - Longitude
  * @returns {Promise<string>} Formatted address
  */
 export const reverseGeocode = async (lat, lng) => {
   try {
-    const google = await initializeGoogleMaps();
-    const geocoder = new google.maps.Geocoder();
-    
-    return new Promise((resolve, reject) => {
-      geocoder.geocode(
-        { location: { lat, lng } },
-        (results, status) => {
-          if (status === 'OK' && results[0]) {
-            resolve(results[0].formatted_address);
-          } else {
-            reject(new Error('Geocoding failed'));
-          }
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'RestaurantApp/1.0' // Required by Nominatim
         }
-      );
-    });
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Geocoding request failed');
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.display_name) {
+      return data.display_name;
+    } else {
+      throw new Error('No address found');
+    }
   } catch (error) {
     console.error('Error in reverse geocoding:', error);
     throw new Error('Failed to get address from coordinates');
@@ -115,35 +91,40 @@ export const reverseGeocode = async (lat, lng) => {
 };
 
 /**
- * Geocode address to get coordinates
+ * Geocode address to get coordinates using Nominatim
  * @param {string} address - Address string
  * @returns {Promise<Object>} Coordinates and formatted address
  */
 export const geocodeAddress = async (address) => {
   try {
-    const google = await initializeGoogleMaps();
-    const geocoder = new google.maps.Geocoder();
-    
-    return new Promise((resolve, reject) => {
-      geocoder.geocode(
-        { address },
-        (results, status) => {
-          if (status === 'OK' && results[0]) {
-            const location = results[0].geometry.location;
-            resolve({
-              coordinates: {
-                lat: location.lat(),
-                lng: location.lng()
-              },
-              address: results[0].formatted_address,
-              placeId: results[0].place_id
-            });
-          } else {
-            reject(new Error('Address not found'));
-          }
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'RestaurantApp/1.0'
         }
-      );
-    });
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Geocoding request failed');
+    }
+    
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      const result = data[0];
+      return {
+        coordinates: {
+          lat: parseFloat(result.lat),
+          lng: parseFloat(result.lon)
+        },
+        address: result.display_name,
+        placeId: result.place_id
+      };
+    } else {
+      throw new Error('Address not found');
+    }
   } catch (error) {
     console.error('Error in geocoding:', error);
     throw new Error('Failed to get coordinates from address');
@@ -151,7 +132,46 @@ export const geocodeAddress = async (address) => {
 };
 
 /**
- * Calculate distance between two coordinates
+ * Search for addresses using Nominatim
+ * @param {string} query - Search query
+ * @param {number} limit - Maximum number of results
+ * @returns {Promise<Array>} Array of address results
+ */
+export const searchAddresses = async (query, limit = 5) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=${limit}&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'RestaurantApp/1.0'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Search request failed');
+    }
+    
+    const data = await response.json();
+    
+    return data.map(result => ({
+      coordinates: {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon)
+      },
+      address: result.display_name,
+      placeId: result.place_id,
+      type: result.type,
+      importance: result.importance
+    }));
+  } catch (error) {
+    console.error('Error in address search:', error);
+    throw new Error('Failed to search addresses');
+  }
+};
+
+/**
+ * Calculate distance between two coordinates using Haversine formula
  * @param {Object} coord1 - First coordinates {lat, lng}
  * @param {Object} coord2 - Second coordinates {lat, lng}
  * @returns {number} Distance in kilometers
@@ -206,6 +226,32 @@ export const calculateDeliveryFee = (userLocation, restaurantLocation, feeStruct
 };
 
 /**
+ * Get estimated delivery time based on distance
+ * @param {Object} userLocation - User coordinates
+ * @param {Object} restaurantLocation - Restaurant coordinates
+ * @returns {string} Estimated delivery time
+ */
+export const getEstimatedDeliveryTime = (userLocation, restaurantLocation) => {
+  const distance = calculateDistance(userLocation, restaurantLocation);
+  
+  // Base preparation time: 15-25 minutes
+  const baseTime = 20;
+  
+  // Add 2 minutes per kilometer
+  const travelTime = Math.ceil(distance * 2);
+  
+  const totalMinutes = baseTime + travelTime;
+  
+  if (totalMinutes < 60) {
+    return `${totalMinutes} minutes`;
+  } else {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+};
+
+/**
  * Format address for display
  * @param {string} address - Full address
  * @returns {Object} Formatted address components
@@ -235,33 +281,7 @@ export const validateCoordinates = (coordinates) => {
          coordinates.lng >= -180 && coordinates.lng <= 180;
 };
 
-/**
- * Get estimated delivery time based on distance
- * @param {Object} userLocation - User coordinates
- * @param {Object} restaurantLocation - Restaurant coordinates
- * @returns {string} Estimated delivery time
- */
-export const getEstimatedDeliveryTime = (userLocation, restaurantLocation) => {
-  const distance = calculateDistance(userLocation, restaurantLocation);
-  
-  // Base preparation time: 15-25 minutes
-  const baseTime = 20;
-  
-  // Add 2 minutes per kilometer
-  const travelTime = Math.ceil(distance * 2);
-  
-  const totalMinutes = baseTime + travelTime;
-  
-  if (totalMinutes < 60) {
-    return `${totalMinutes} minutes`;
-  } else {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-  }
-};
-
-// Restaurant location (you can update this to your actual restaurant location)
+// Restaurant location (update to your actual restaurant location)
 export const RESTAURANT_LOCATION = {
   lat: 5.6037, // Accra, Ghana coordinates (update to your restaurant location)
   lng: -0.1870,
