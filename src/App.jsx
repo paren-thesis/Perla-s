@@ -6,6 +6,7 @@ import About from "./pages/About";
 import Menu from "./pages/Menu";
 import Login from "./pages/Login";
 import BookTable from "./pages/BookTable";
+import Checkout from "./pages/Checkout";
 import AccountSettings from "./pages/AccountSettings";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -25,6 +26,7 @@ function App() {
 							<Route path="/about" element={<About />} />
 							<Route path="/menu" element={<Menu />} />
 							<Route path="/book-table" element={<BookTable />} />
+							<Route path="/checkout" element={<Checkout />} />
 							<Route path="/login" element={<Login />} />
 							<Route path="/account" element={<AccountSettings />} />
 						</Routes>
