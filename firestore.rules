@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users can only access their own profile data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Bookings are user-specific - users can only access their own bookings
+    match /bookings/{bookingId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Menu items are publicly readable, but only admins can write
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow write: if false; // Only admins can modify menu items
+    }
+    
+    // Orders are user-specific - users can only access their own orders
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Cart is user-specific - users can only access their own cart
+    match /cart/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Delivery addresses are user-specific
+    match /deliveryAddresses/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Admin operations (for future admin dashboard)
+    match /admin/{document=**} {
+      allow read, write: if false; // Will be implemented later with admin role checking
+    }
+  }
+}
