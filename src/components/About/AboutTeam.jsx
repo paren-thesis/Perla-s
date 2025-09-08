@@ -6,21 +6,21 @@ const team = [
 	{
 		name: "Chef Maria Perla",
 		role: "Head Chef & Founder",
-		image: "/images/chef-maria.jpg",
+		image: "/images/chefs/image1.png",
 		description:
 			"With over 20 years of culinary experience, Chef Maria brings passion and creativity to every dish.",
 	},
 	{
 		name: "Antonio Perla",
 		role: "Restaurant Manager",
-		image: "/images/antonio.jpg",
+		image: "/images/chefs/image2.png",
 		description:
 			"Ensuring every guest receives exceptional service and a memorable dining experience.",
 	},
 	{
 		name: "Isabella Perla",
 		role: "Pastry Chef",
-		image: "/images/isabella.jpg",
+		image: "/images/chefs/image3.png",
 		description:
 			"Creating sweet masterpieces that are as beautiful as they are delicious.",
 	},

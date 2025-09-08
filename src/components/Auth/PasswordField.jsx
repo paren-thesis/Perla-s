@@ -34,7 +34,7 @@ function PasswordField({
 		}
 	};
 
-	const strength = showStrengthIndicator ? getPasswordStrengthDisplay(value) : null;
+	const strength = showStrengthIndicator ? getPasswordStrength(value) : null;
 
 	return (
 		<div>
