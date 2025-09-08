@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaShoppingCart, FaCreditCard, FaCheck } from 'react-icons/fa';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestore } from '../contexts/FirestoreContext';
 import DeliveryTypeSelector from '../components/Checkout/DeliveryTypeSelector';
+import PaymentForm from '../components/Payment/PaymentForm';
+import PaymentSuccess from '../components/Payment/PaymentSuccess';
 import Cart from '../components/Menu/Cart';
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Checkout = () => {
   const { currentUser } = useAuth();
@@ -15,6 +22,8 @@ const Checkout = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderStep, setOrderStep] = useState(1); // 1: Delivery Type, 2: Review, 3: Payment, 4: Confirmation
+  const [paymentIntent, setPaymentIntent] = useState(null);
+  const [orderData, setOrderData] = useState(null);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -66,20 +75,47 @@ const Checkout = () => {
 
     setIsProcessing(true);
     try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create order data
+      const order = {
+        orderId: `ORD-${Date.now()}`,
+        userId: currentUser.uid,
+        items: cart.items,
+        total: parseFloat(cart.total),
+        deliveryType,
+        deliveryAddress: userLocation?.address || null,
+        deliveryFee: deliveryType === 'delivery' ? 2.99 : 0, // This would be calculated
+        createdAt: new Date().toISOString(),
+        status: 'pending'
+      };
+
+      setOrderData(order);
+      setOrderStep(4); // Move to payment step
+    } catch (error) {
+      console.error('Order processing error:', error);
+      alert('Failed to create order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentIntent) => {
+    try {
+      setPaymentIntent(paymentIntent);
       
       // Clear cart
       await clearUserCart();
       
-      // Move to confirmation step
-      setOrderStep(4);
+      // Move to success step
+      setOrderStep(5);
     } catch (error) {
-      console.error('Order processing error:', error);
-      alert('Failed to place order. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      console.error('Payment success handling error:', error);
+      alert('Order placed but there was an issue. Please contact support.');
     }
+  };
+
+  const handlePaymentError = (error) => {
+    console.error('Payment error:', error);
+    alert(`Payment failed: ${error}`);
   };
 
   const handleBackToMenu = () => {
@@ -95,7 +131,8 @@ const Checkout = () => {
       case 1: return 'Delivery Method';
       case 2: return 'Review Order';
       case 3: return 'Payment';
-      case 4: return 'Order Confirmed';
+      case 4: return 'Payment';
+      case 5: return 'Order Confirmed';
       default: return 'Checkout';
     }
   };
@@ -105,7 +142,8 @@ const Checkout = () => {
       case 1: return 'Choose how you want to receive your order';
       case 2: return 'Review your order details and delivery information';
       case 3: return 'Complete your payment';
-      case 4: return 'Your order has been placed successfully';
+      case 4: return 'Complete your payment';
+      case 5: return 'Your order has been placed successfully';
       default: return '';
     }
   };
@@ -115,6 +153,8 @@ const Checkout = () => {
       case 1: return deliveryType === 'pickup' || (deliveryType === 'delivery' && userLocation);
       case 2: return true;
       case 3: return true;
+      case 4: return false; // Payment form handles its own submission
+      case 5: return false; // Success step
       default: return false;
     }
   };
@@ -147,7 +187,7 @@ const Checkout = () => {
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3, 4, 5].map((step) => (
               <div key={step} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   orderStep >= step
@@ -156,7 +196,7 @@ const Checkout = () => {
                 }`}>
                   {orderStep > step ? <FaCheck /> : step}
                 </div>
-                {step < 4 && (
+                {step < 5 && (
                   <div className={`w-8 h-0.5 ml-2 ${
                     orderStep > step ? 'bg-primary-500' : 'bg-gray-200'
                   }`} />
@@ -242,7 +282,7 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* Step 3: Payment */}
+          {/* Step 3: Payment (Legacy) */}
           {orderStep === 3 && (
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -267,42 +307,31 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* Step 4: Confirmation */}
-          {orderStep === 4 && (
-            <div className="bg-white rounded-lg shadow-lg p-6 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaCheck className="text-2xl text-green-600" />
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Order Confirmed!
-              </h3>
-              
-              <p className="text-gray-600 mb-6">
-                Your order has been placed successfully. You will receive a confirmation email shortly.
-              </p>
-              
-              <div className="space-y-3">
-                <button
-                  onClick={handleNewOrder}
-                  className="w-full md:w-auto px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
-                >
-                  Place Another Order
-                </button>
-                
-                <button
-                  onClick={() => navigate('/')}
-                  className="w-full md:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium ml-0 md:ml-3"
-                >
-                  Back to Home
-                </button>
-              </div>
-            </div>
+          {/* Step 4: Payment */}
+          {orderStep === 4 && orderData && (
+            <Elements stripe={stripePromise}>
+              <PaymentForm
+                orderData={orderData}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                isProcessing={isProcessing}
+              />
+            </Elements>
+          )}
+
+          {/* Step 5: Confirmation */}
+          {orderStep === 5 && paymentIntent && orderData && (
+            <PaymentSuccess
+              paymentIntent={paymentIntent}
+              orderData={orderData}
+              onNewOrder={handleNewOrder}
+              onBackToHome={() => navigate('/')}
+            />
           )}
         </div>
 
         {/* Navigation Buttons */}
-        {orderStep < 4 && (
+        {orderStep < 5 && orderStep !== 4 && (
           <div className="flex items-center justify-between mt-8">
             <button
               onClick={handleBackStep}
@@ -331,7 +360,7 @@ const Checkout = () => {
                   Processing...
                 </div>
               ) : (
-                orderStep === 3 ? 'Place Order' : 'Continue'
+                orderStep === 3 ? 'Proceed to Payment' : 'Continue'
               )}
             </button>
           </div>
