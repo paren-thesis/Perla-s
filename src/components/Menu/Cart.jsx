@@ -8,6 +8,7 @@ function Cart({
 	onSubmit,
 	isMobile = false,
 	onClearCart,
+	isReadOnly = false,
 }) {
 	const total = items
 		.reduce((acc, it) => acc + it.price * it.quantity, 0)
@@ -68,40 +69,52 @@ function Cart({
 										${it.price.toFixed(2)}
 									</p>
 								</div>
-								<div className="flex items-center gap-1">
-									<button
-										onClick={() => onDecrement(it.id)}
-										className="w-6 h-6 rounded border border-gray-200 hover:bg-gray-50 text-xs font-bold"
-									>
-										-
-									</button>
-									<span className="w-6 text-center text-sm font-semibold">
-										{it.quantity}
-									</span>
-									<button
-										onClick={() => onIncrement(it.id)}
-										className="w-6 h-6 rounded border border-gray-200 hover:bg-gray-50 text-xs font-bold"
-									>
-										+
-									</button>
-								</div>
-								<button
-									onClick={() => onRemove(it.id)}
-									className="text-xs text-red-600 hover:underline ml-1"
-								>
-									×
-								</button>
+								{!isReadOnly ? (
+									<>
+										<div className="flex items-center gap-1">
+											<button
+												onClick={() => onDecrement(it.id)}
+												className="w-6 h-6 rounded border border-gray-200 hover:bg-gray-50 text-xs font-bold"
+											>
+												-
+											</button>
+											<span className="w-6 text-center text-sm font-semibold">
+												{it.quantity}
+											</span>
+											<button
+												onClick={() => onIncrement(it.id)}
+												className="w-6 h-6 rounded border border-gray-200 hover:bg-gray-50 text-xs font-bold"
+											>
+												+
+											</button>
+										</div>
+										<button
+											onClick={() => onRemove(it.id)}
+											className="text-xs text-red-600 hover:underline ml-1"
+										>
+											×
+										</button>
+									</>
+								) : (
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-gray-600">
+											Qty: {it.quantity}
+										</span>
+									</div>
+								)}
 							</li>
 						))}
 					</ul>
 				</div>
 
-				<button
-					onClick={onSubmit}
-					className="mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm shadow hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all duration-200"
-				>
-					Checkout (${total})
-				</button>
+				{!isReadOnly && (
+					<button
+						onClick={onSubmit}
+						className="mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm shadow hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all duration-200"
+					>
+						Checkout (${total})
+					</button>
+				)}
 			</div>
 		);
 	}
@@ -115,25 +128,27 @@ function Cart({
 					<span className="text-sm font-semibold text-gray-500">
 						{items.length} item{items.length !== 1 ? "s" : ""}
 					</span>
-					<button
-						onClick={handleClearCart}
-						className="text-red-600 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
-						title="Clear cart"
-					>
-						<svg
-							className="w-5 h-5"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
+					{!isReadOnly && (
+						<button
+							onClick={handleClearCart}
+							className="text-red-600 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+							title="Clear cart"
 						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
-					</button>
+							<svg
+								className="w-5 h-5"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M6 18L18 6M6 6l12 12"
+								/>
+							</svg>
+						</button>
+					)}
 				</div>
 			</div>
 
@@ -157,29 +172,39 @@ function Cart({
 									${it.price.toFixed(2)}
 								</p>
 							</div>
-							<div className="flex items-center gap-2">
-								<button
-									onClick={() => onDecrement(it.id)}
-									className="w-8 h-8 rounded border border-gray-200 hover:bg-gray-50 font-bold"
-								>
-									-
-								</button>
-								<span className="w-6 text-center font-semibold">
-									{it.quantity}
-								</span>
-								<button
-									onClick={() => onIncrement(it.id)}
-									className="w-8 h-8 rounded border border-gray-200 hover:bg-gray-50 font-bold"
-								>
-									+
-								</button>
-							</div>
-							<button
-								onClick={() => onRemove(it.id)}
-								className="text-xs text-red-600 hover:underline"
-							>
-								Remove
-							</button>
+							{!isReadOnly ? (
+								<>
+									<div className="flex items-center gap-2">
+										<button
+											onClick={() => onDecrement(it.id)}
+											className="w-8 h-8 rounded border border-gray-200 hover:bg-gray-50 font-bold"
+										>
+											-
+										</button>
+										<span className="w-6 text-center font-semibold">
+											{it.quantity}
+										</span>
+										<button
+											onClick={() => onIncrement(it.id)}
+											className="w-8 h-8 rounded border border-gray-200 hover:bg-gray-50 font-bold"
+										>
+											+
+										</button>
+									</div>
+									<button
+										onClick={() => onRemove(it.id)}
+										className="text-xs text-red-600 hover:underline"
+									>
+										Remove
+									</button>
+								</>
+							) : (
+								<div className="flex items-center gap-2">
+									<span className="text-sm text-gray-600">
+										Qty: {it.quantity}
+									</span>
+								</div>
+							)}
 						</li>
 					))}
 				</ul>
@@ -191,12 +216,14 @@ function Cart({
 					${total}
 				</span>
 			</div>
-			<button
-				onClick={onSubmit}
-				className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold shadow hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all duration-200"
-			>
-				Proceed to Checkout
-			</button>
+			{!isReadOnly && (
+				<button
+					onClick={onSubmit}
+					className="mt-4 w-full inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold shadow hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all duration-200"
+				>
+					Proceed to Checkout
+				</button>
+			)}
 		</aside>
 	);
 }
