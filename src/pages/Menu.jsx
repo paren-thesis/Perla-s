@@ -186,8 +186,7 @@ function Menu() {
 
 		if (currentUser) {
 			// User is logged in, proceed to checkout
-			alert("Proceeding to checkout...");
-			// Add your checkout logic here
+			navigate("/checkout");
 		} else {
 			// User not logged in, show login dialog
 			setShowLoginDialog(true);

@@ -3,6 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import AccountInfo from "../components/AccountSettings/AccountInfo";
 import ProfileSettings from "../components/AccountSettings/ProfileSettings";
 import NotificationPreferences from "../components/AccountSettings/NotificationPreferences";
+import LocationSettings from "../components/AccountSettings/LocationSettings";
 import AccountActions from "../components/AccountSettings/AccountActions";
 import { useNavigate } from "react-router-dom";
 
@@ -46,6 +47,11 @@ function AccountSettings() {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 					<ProfileSettings />
 					<NotificationPreferences />
+				</div>
+
+				{/* Location Settings - Full Width */}
+				<div className="mb-8">
+					<LocationSettings />
 				</div>
 
 				{/* Logout Section */}
