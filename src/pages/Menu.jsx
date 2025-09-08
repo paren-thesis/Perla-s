@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useApiAuth } from "../contexts/ApiAuthContext";
+import { useMenu } from "../hooks/useMenu";
+import { useOrders } from "../hooks/useOrders";
 import MenuHeader from "../components/Menu/MenuHeader";
 import MenuGrid from "../components/Menu/MenuGrid";
 import Cart from "../components/Menu/Cart";
@@ -8,13 +10,14 @@ import CartToggleButton from "../components/Menu/CartToggleButton";
 import ClearCartDialog from "../components/Menu/ClearCartDialog";
 import LoginRequiredDialog from "../components/Menu/LoginRequiredDialog";
 import LoadingProgress from "../components/LoadingProgress";
-import menuItems from "../components/Menu/menuItems";
 import { useImagePreloader } from "../hooks/useImagePreloader";
 
 function Menu() {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { currentUser } = useAuth();
+	const { currentUser } = useApiAuth();
+	const { menuItems, categories, loading: menuLoading, loadMenuItems } = useMenu();
+	const { createOrder } = useOrders();
 	const [selectedCategory, setSelectedCategory] = useState("all");
 	const [cartItems, setCartItems] = useState([]);
 	const [isCartOpen, setIsCartOpen] = useState(false);
@@ -23,16 +26,15 @@ function Menu() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCategoryChanging, setIsCategoryChanging] = useState(false);
 
-
 	// Extract all image sources for preloading
 	const allImageSources = useMemo(() => {
-		return menuItems.map(item => item.image);
-	}, []);
+		return menuItems.map(item => item.image).filter(Boolean);
+	}, [menuItems]);
 
 	// Get priority images (first few items or featured items)
 	const priorityImages = useMemo(() => {
-		return menuItems.slice(0, 6).map(item => item.image);
-	}, []);
+		return menuItems.slice(0, 6).map(item => item.image).filter(Boolean);
+	}, [menuItems]);
 
 	// Use image preloader
 	const imagePreloader = useImagePreloader(allImageSources, {
@@ -63,18 +65,24 @@ function Menu() {
 		}
 	}, [location.state, cartItems]);
 
-	// Simulate initial loading
+	// Handle initial loading
 	useEffect(() => {
-		const timer = setTimeout(() => {
-			setIsLoading(false);
-		}, 800); // Reduced from 1500ms
-		return () => clearTimeout(timer);
-	}, []);
+		if (!menuLoading) {
+			const timer = setTimeout(() => {
+				setIsLoading(false);
+			}, 300);
+			return () => clearTimeout(timer);
+		}
+	}, [menuLoading]);
 
 	// Handle category changes with loading state
 	const handleCategoryChange = (category) => {
 		setIsCategoryChanging(true);
 		setSelectedCategory(category);
+
+		// Load menu items for the selected category
+		const categoryParam = category === 'all' ? {} : { category: category.toUpperCase() };
+		loadMenuItems(categoryParam);
 
 		setTimeout(() => {
 			setIsCategoryChanging(false);
@@ -85,36 +93,10 @@ function Menu() {
 		if (cartItems.length === 0 && isCartOpen) setIsCartOpen(false);
 	}, [cartItems, isCartOpen]);
 
-	const categories = useMemo(() => {
-		const counts = menuItems.reduce((acc, item) => {
-			acc[item.category] = (acc[item.category] || 0) + 1;
-			return acc;
-		}, {});
-		return [
-			{ label: "All", value: "all", count: menuItems.length },
-			{
-				label: "Starters",
-				value: "starters",
-				count: counts["starters"] || 0,
-			},
-			{
-				label: "Breakfast",
-				value: "breakfast",
-				count: counts["breakfast"] || 0,
-			},
-			{ label: "Lunch", value: "lunch", count: counts["lunch"] || 0 },
-			{
-				label: "Desserts",
-				value: "desserts",
-				count: counts["desserts"] || 0,
-			},
-			{
-				label: "Beverages",
-				value: "beverages",
-				count: counts["beverages"] || 0,
-			},
-		];
-	}, []);
+	const categoriesWithAll = useMemo(() => {
+		const allCategory = { label: "All", value: "all", count: menuItems.length };
+		return [allCategory, ...categories];
+	}, [categories, menuItems.length]);
 
 	const filteredItems = useMemo(
 		() =>
@@ -178,16 +160,38 @@ function Menu() {
 		localStorage.removeItem("perlasCart");
 	};
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		if (cartItems.length === 0) {
 			alert("Please add items to your cart first!");
 			return;
 		}
 
 		if (currentUser) {
-			// User is logged in, proceed to checkout
-			alert("Proceeding to checkout...");
-			// Add your checkout logic here
+			try {
+				// Convert cart items to order format
+				const orderItems = cartItems.map(item => ({
+					menuItemId: item.id,
+					quantity: item.quantity,
+					price: parseFloat(item.price)
+				}));
+
+				const result = await createOrder({
+					items: orderItems,
+					paymentMethod: 'CARD', // Default payment method
+					specialInstructions: 'Order placed from website'
+				});
+
+				if (result.success) {
+					// Clear cart and show success message
+					setCartItems([]);
+					localStorage.removeItem("perlasCart");
+					alert(`Order placed successfully! Order ID: ${result.order.id}`);
+					setIsCartOpen(false);
+				}
+			} catch (error) {
+				console.error('Order creation failed:', error);
+				alert(`Failed to place order: ${error.message}`);
+			}
 		} else {
 			// User not logged in, show login dialog
 			setShowLoginDialog(true);
@@ -232,7 +236,7 @@ function Menu() {
 			/>
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-8">
 				<MenuHeader
-					categories={categories}
+					categories={categoriesWithAll}
 					selectedCategory={selectedCategory}
 					onCategoryChange={handleCategoryChange}
 				/>

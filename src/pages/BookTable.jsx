@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useApiAuth } from "../contexts/ApiAuthContext";
+import { useBookings } from "../hooks/useBookings";
 import BookingForm from "../components/Booking/BookingForm";
 import BookingConfirmation from "../components/Booking/BookingConfirmation";
 import LoginRequiredDialog from "../components/Menu/LoginRequiredDialog";
@@ -10,7 +11,8 @@ function BookTable() {
 	const [showConfirmation, setShowConfirmation] = useState(false);
 	const [bookingData, setBookingData] = useState(null);
 	const [showLoginDialog, setShowLoginDialog] = useState(false);
-	const { currentUser } = useAuth();
+	const { currentUser } = useApiAuth();
+	const { createBooking } = useBookings();
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -18,27 +20,41 @@ function BookTable() {
 		return () => clearTimeout(timer);
 	}, []);
 
-	const handleBookingSubmit = (formData) => {
+	const handleBookingSubmit = async (formData) => {
 		if (!currentUser) {
 			setShowLoginDialog(true);
 			return;
 		}
 
-		// Add user info to booking data
-		const completeBookingData = {
-			...formData,
-			userEmail: currentUser.email,
-			userId: currentUser.uid,
-			bookingId: `BK${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-			status: "confirmed",
-			createdAt: new Date().toISOString(),
-		};
+		try {
+			// Convert form data to API format
+			const bookingData = {
+				date: formData.date,
+				time: formData.time,
+				partySize: parseInt(formData.partySize),
+				specialRequests: formData.specialRequests || ''
+			};
 
-		setBookingData(completeBookingData);
-		setShowConfirmation(true);
+			const result = await createBooking(bookingData);
 
-		// Here you would typically save to a database
-		console.log("Booking submitted:", completeBookingData);
+			if (result.success) {
+				// Add user info to booking data for display
+				const completeBookingData = {
+					...result.booking,
+					userEmail: currentUser.email,
+					userId: currentUser.id,
+					bookingId: result.booking.id,
+					status: result.booking.status,
+					createdAt: result.booking.createdAt,
+				};
+
+				setBookingData(completeBookingData);
+				setShowConfirmation(true);
+			}
+		} catch (error) {
+			console.error('Booking creation failed:', error);
+			alert(`Failed to create booking: ${error.message}`);
+		}
 	};
 
 	const handleNewBooking = () => {

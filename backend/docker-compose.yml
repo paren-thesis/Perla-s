@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: perlas-postgres
+    environment:
+      POSTGRES_DB: perlas_restaurant
+      POSTGRES_USER: perlas_user
+      POSTGRES_PASSWORD: perlas_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U perlas_user -d perlas_restaurant"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build: .
+    container_name: perlas-api
+    environment:
+      DATABASE_URL: "postgresql://perlas_user:perlas_password@postgres:5432/perlas_restaurant"
+      JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
+      JWT_EXPIRES_IN: "7d"
+      PORT: 5000
+      NODE_ENV: "production"
+      FRONTEND_URL: "http://localhost:5173"
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

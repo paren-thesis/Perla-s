@@ -1,7 +1,7 @@
 // Updated Login.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useApiAuth } from "../contexts/ApiAuthContext";
 import { validatePassword, isValidEmail } from "../utils/authErrors";
 import AuthFormHeader from "../components/Auth/AuthFormHeader";
 import AuthFormCard from "../components/Auth/AuthFormCard";
@@ -36,22 +36,18 @@ function Login() {
 		resendVerificationEmail,
 		checkEmailVerification,
 		logout
-	} = useAuth();
+	} = useApiAuth();
 
 	useEffect(() => {
 		const timer = setTimeout(() => setIsMounted(true), 100);
 		return () => clearTimeout(timer);
 	}, []);
 
-	// Redirect if user is already logged in and verified
+	// Redirect if user is already logged in
 	useEffect(() => {
-		if (currentUser && currentUser.emailVerified) {
+		if (currentUser) {
 			const returnTo = location.state?.returnTo || "/menu";
 			navigate(returnTo);
-		} else if (currentUser && !currentUser.emailVerified) {
-			// Show verification dialog for unverified users
-			setUnverifiedUser(currentUser);
-			setShowVerificationDialog(true);
 		}
 	}, [currentUser, navigate, location.state]);
 
@@ -99,13 +95,9 @@ function Login() {
 				if (result.success) {
 					setDialogMessage(result.message);
 					setShowSuccessDialog(true);
-				} else if (result.needsVerification) {
-					// User exists but email not verified
-					setUnverifiedUser(result.user);
-					setShowVerificationDialog(true);
 				}
 			} else {
-				const result = await signup(email, password);
+				const result = await signup(email, password, undefined, undefined, undefined);
 				setDialogMessage(result.message);
 				setShowSuccessDialog(true);
 				// Clear form after successful signup

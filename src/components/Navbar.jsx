@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useApiAuth } from "../contexts/ApiAuthContext";
 
 const Navbar = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -8,7 +8,7 @@ const Navbar = () => {
 	const [isAccountOpen, setIsAccountOpen] = useState(false); // New state for account dropdown
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { currentUser, logout } = useAuth();
+	const { currentUser, logout } = useApiAuth();
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 	useEffect(() => {
