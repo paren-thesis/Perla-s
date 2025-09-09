@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaShoppingCart, FaCreditCard, FaCheck } from 'react-icons/fa';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestore } from '../contexts/FirestoreContext';
 import DeliveryTypeSelector from '../components/Checkout/DeliveryTypeSelector';
-import PaymentForm from '../components/Payment/PaymentForm';
+import PaystackPaymentForm from '../components/Payment/PaystackPaymentForm';
 import PaymentSuccess from '../components/Payment/PaymentSuccess';
 import Cart from '../components/Menu/Cart';
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// Paystack integration - no initialization needed
 
 const Checkout = () => {
   const { currentUser } = useAuth();
@@ -309,14 +306,12 @@ const Checkout = () => {
 
           {/* Step 4: Payment */}
           {orderStep === 4 && orderData && (
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                orderData={orderData}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                isProcessing={isProcessing}
-              />
-            </Elements>
+            <PaystackPaymentForm
+              orderData={orderData}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+              isProcessing={isProcessing}
+            />
           )}
 
           {/* Step 5: Confirmation */}
