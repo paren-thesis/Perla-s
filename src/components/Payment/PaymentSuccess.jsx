@@ -1,6 +1,5 @@
 import React from 'react';
 import { FaCheckCircle, FaReceipt, FaDownload, FaShare, FaHome, FaShoppingCart } from 'react-icons/fa';
-import { formatAmount } from '../../services/stripeService';
 
 const PaymentSuccess = ({ 
   paymentIntent, 

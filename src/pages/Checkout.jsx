@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaShoppingCart, FaCreditCard, FaCheck } from 'react-icons/fa';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestore } from '../contexts/FirestoreContext';
 import DeliveryTypeSelector from '../components/Checkout/DeliveryTypeSelector';
-import PaymentForm from '../components/Payment/PaymentForm';
+import PaystackPaymentForm from '../components/Payment/PaystackPaymentForm';
 import PaymentSuccess from '../components/Payment/PaymentSuccess';
 import Cart from '../components/Menu/Cart';
 
-// Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const Checkout = () => {
   const { currentUser } = useAuth();
   const { cart, clearUserCart } = useFirestore();
   const navigate = useNavigate();
-  
+
   const [deliveryType, setDeliveryType] = useState('pickup');
   const [userLocation, setUserLocation] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -28,8 +24,8 @@ const Checkout = () => {
   // Redirect if not logged in
   useEffect(() => {
     if (!currentUser) {
-      navigate('/login', { 
-        state: { from: 'checkout' } 
+      navigate('/login', {
+        state: { from: 'checkout' }
       });
     }
   }, [currentUser, navigate]);
@@ -101,10 +97,10 @@ const Checkout = () => {
   const handlePaymentSuccess = async (paymentIntent) => {
     try {
       setPaymentIntent(paymentIntent);
-      
+
       // Clear cart
       await clearUserCart();
-      
+
       // Move to success step
       setOrderStep(5);
     } catch (error) {
@@ -175,12 +171,12 @@ const Checkout = () => {
             <FaArrowLeft className="mr-2" />
             Back to Menu
           </button>
-          
+
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">{getStepTitle()}</h1>
             <p className="text-gray-600">{getStepDescription()}</p>
           </div>
-          
+
           <div className="w-20"></div> {/* Spacer for centering */}
         </div>
 
@@ -189,17 +185,15 @@ const Checkout = () => {
           <div className="flex items-center justify-center space-x-4">
             {[1, 2, 3, 4, 5].map((step) => (
               <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  orderStep >= step
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${orderStep >= step
                     ? 'bg-primary-500 text-white'
                     : 'bg-gray-200 text-gray-500'
-                }`}>
+                  }`}>
                   {orderStep > step ? <FaCheck /> : step}
                 </div>
                 {step < 5 && (
-                  <div className={`w-8 h-0.5 ml-2 ${
-                    orderStep > step ? 'bg-primary-500' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-8 h-0.5 ml-2 ${orderStep > step ? 'bg-primary-500' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -227,11 +221,11 @@ const Checkout = () => {
                 </h3>
                 <Cart
                   items={cart.items}
-                  onIncrement={() => {}} // Read-only in checkout
-                  onDecrement={() => {}} // Read-only in checkout
-                  onRemove={() => {}} // Read-only in checkout
-                  onSubmit={() => {}} // Not used in review
-                  onClearCart={() => {}} // Not used in review
+                  onIncrement={() => { }} // Read-only in checkout
+                  onDecrement={() => { }} // Read-only in checkout
+                  onRemove={() => { }} // Read-only in checkout
+                  onSubmit={() => { }} // Not used in review
+                  onClearCart={() => { }} // Not used in review
                   isMobile={false}
                   isReadOnly={true}
                 />
@@ -242,7 +236,7 @@ const Checkout = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   {deliveryType === 'delivery' ? 'Delivery Information' : 'Pickup Information'}
                 </h3>
-                
+
                 {deliveryType === 'delivery' ? (
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
@@ -289,7 +283,7 @@ const Checkout = () => {
                 <FaCreditCard className="mr-2 text-primary-500" />
                 Payment Information
               </h3>
-              
+
               <div className="text-center py-12">
                 <FaCreditCard className="mx-auto text-6xl text-gray-300 mb-4" />
                 <h4 className="text-xl font-semibold text-gray-900 mb-2">
@@ -309,14 +303,12 @@ const Checkout = () => {
 
           {/* Step 4: Payment */}
           {orderStep === 4 && orderData && (
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                orderData={orderData}
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                isProcessing={isProcessing}
-              />
-            </Elements>
+            <PaystackPaymentForm
+              orderData={orderData}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={handlePaymentError}
+              isProcessing={isProcessing}
+            />
           )}
 
           {/* Step 5: Confirmation */}
@@ -336,23 +328,21 @@ const Checkout = () => {
             <button
               onClick={handleBackStep}
               disabled={orderStep === 1}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                orderStep === 1
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${orderStep === 1
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
+                }`}
             >
               Back
             </button>
-            
+
             <button
               onClick={handleNextStep}
               disabled={!canProceed() || isProcessing}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                !canProceed() || isProcessing
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${!canProceed() || isProcessing
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-primary-500 text-white hover:bg-primary-600'
-              }`}
+                }`}
             >
               {isProcessing ? (
                 <div className="flex items-center">
