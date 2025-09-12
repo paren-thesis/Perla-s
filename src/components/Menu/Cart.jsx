@@ -46,7 +46,7 @@ function Cart({
 					</button>
 				</div>
 				<div className="text-sm font-semibold text-primary-600 mb-3 text-right">
-					${total}
+					₵{total}
 				</div>
 
 				<div className="max-h-64 overflow-y-auto">
@@ -66,7 +66,7 @@ function Cart({
 										{it.name}
 									</p>
 									<p className="text-xs text-gray-500">
-										${it.price.toFixed(2)}
+										₵{it.price.toFixed(2)}
 									</p>
 								</div>
 								{!isReadOnly ? (
@@ -112,7 +112,7 @@ function Cart({
 						onClick={onSubmit}
 						className="mt-3 w-full inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold text-sm shadow hover:from-primary-600 hover:to-primary-700 transform hover:-translate-y-0.5 transition-all duration-200"
 					>
-						Checkout (${total})
+						Checkout (₵{total})
 					</button>
 				)}
 			</div>
@@ -169,7 +169,7 @@ function Cart({
 									{it.name}
 								</p>
 								<p className="text-sm text-gray-500">
-									${it.price.toFixed(2)}
+									₵{it.price.toFixed(2)}
 								</p>
 							</div>
 							{!isReadOnly ? (
@@ -213,7 +213,7 @@ function Cart({
 			<div className="mt-4 flex items-center justify-between">
 				<span className="text-sm text-gray-600">Subtotal</span>
 				<span className="text-lg font-bold text-secondary-900">
-					${total}
+					₵{total}
 				</span>
 			</div>
 			{!isReadOnly && (

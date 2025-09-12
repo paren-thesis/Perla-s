@@ -81,15 +81,19 @@ const Checkout = () => {
         deliveryAddress: userLocation?.address || null,
         deliveryFee: deliveryType === 'delivery' ? 2.99 : 0, // This would be calculated
         createdAt: new Date().toISOString(),
-        status: 'pending'
+        status: 'pending',
+        currency: 'GHS' // Ensure currency is set
       };
 
       setOrderData(order);
-      setOrderStep(4); // Move to payment step
+      // Use setTimeout to ensure state updates are processed in the correct order
+      setTimeout(() => {
+        setOrderStep(4); // Move to payment step
+        setIsProcessing(false);
+      }, 0);
     } catch (error) {
       console.error('Order processing error:', error);
       alert('Failed to create order. Please try again.');
-    } finally {
       setIsProcessing(false);
     }
   };

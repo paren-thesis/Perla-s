@@ -59,7 +59,7 @@ function MenuCard({ item, onAdd }) {
 						</p>
 					</div>
 					<div className="text-primary-600 text-lg sm:text-xl lg:text-2xl font-bold whitespace-nowrap flex-shrink-0">
-						${item.price}
+						₵{item.price.toFixed(2)}
 					</div>
 				</div>
 				<div className="mt-auto">
