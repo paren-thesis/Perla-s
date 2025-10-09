@@ -7,10 +7,13 @@
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 const PAYSTACK_SECRET_KEY = import.meta.env.VITE_PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const USE_BACKEND_PROXY = import.meta.env.VITE_USE_BACKEND_PROXY === 'true';
 
-// Important: In production, API calls should go through your backend
-// This is for demonstration purposes only
-// Never expose your secret key in frontend code
+// ⚠️ SECURITY WARNING: In production, API calls should go through your backend
+// This implementation supports both direct API calls (dev/test) and backend proxy (production)
+// Set VITE_USE_BACKEND_PROXY=true and VITE_BACKEND_URL to use backend proxy
+// Never expose secret keys in production frontend code
 
 /**
  * Initialize Transaction using Paystack Transactions API
@@ -27,29 +30,53 @@ export const initializeTransaction = async (config) => {
 		channels = ["mobile_money"], // Default to mobile money for Ghana
 	} = config;
 
+	// Live mode warning
+	if (isLiveMode()) {
+		console.warn('🚨 LIVE MODE: Real money transaction will be processed!');
+	}
+
 	try {
-		const response = await fetch(`${PAYSTACK_BASE_URL}/transaction/initialize`, {
-			method: 'POST',
-			headers: {
+		// Use backend proxy if configured, otherwise direct API call
+		const apiUrl = USE_BACKEND_PROXY && BACKEND_URL 
+			? `${BACKEND_URL}/api/paystack/initialize`
+			: `${PAYSTACK_BASE_URL}/transaction/initialize`;
+		
+		const headers = USE_BACKEND_PROXY && BACKEND_URL
+			? { 'Content-Type': 'application/json' }
+			: {
 				'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
 				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				email,
-				amount: Math.round(amount * 100).toString(), // Convert to pesewas and stringify
-				currency,
-				reference,
-				channels,
-				metadata: JSON.stringify(metadata)
-			})
+			};
+
+		const requestBody = {
+			email,
+			amount: Math.round(amount * 100).toString(), // Convert to pesewas and stringify
+			currency,
+			reference,
+			channels,
+			metadata: USE_BACKEND_PROXY ? metadata : JSON.stringify(metadata)
+		};
+
+		const response = await fetch(apiUrl, {
+			method: 'POST',
+			headers,
+			body: JSON.stringify(requestBody)
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json();
-			throw new Error(errorData.message || 'Failed to initialize transaction');
+			throw new Error(errorData.message || errorData.error || 'Failed to initialize transaction');
 		}
 
 		const data = await response.json();
+		console.log(`PayStack ${getCurrentMode().toUpperCase()} transaction initialized:`, {
+			reference,
+			amount: amount,
+			currency,
+			channels,
+			usingProxy: USE_BACKEND_PROXY && BACKEND_URL
+		});
+		
 		return {
 			success: true,
 			data: data.data,
@@ -158,19 +185,41 @@ export const createPaymentData = (orderData, userEmail, channels = ["mobile_mone
  */
 export const verifyTransaction = async (reference) => {
 	try {
-		const response = await fetch(`${PAYSTACK_BASE_URL}/transaction/verify/${reference}`, {
+		// Use backend proxy if configured, otherwise direct API call
+		const apiUrl = USE_BACKEND_PROXY && BACKEND_URL 
+			? `${BACKEND_URL}/api/paystack/verify/${reference}`
+			: `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`;
+		
+		const headers = USE_BACKEND_PROXY && BACKEND_URL
+			? {}
+			: { 'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}` };
+
+		const response = await fetch(apiUrl, {
 			method: 'GET',
-			headers: {
-				'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
-			}
+			headers
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json();
-			throw new Error(errorData.message || 'Failed to verify transaction');
+			throw new Error(errorData.message || errorData.error || 'Failed to verify transaction');
 		}
 
 		const data = await response.json();
+		
+		// Log verification result
+		console.log(`PayStack ${getCurrentMode().toUpperCase()} transaction verified:`, {
+			reference,
+			status: data.data.status,
+			amount: data.data.amount / 100, // Convert back from pesewas
+			currency: data.data.currency,
+			channel: data.data.channel,
+			usingProxy: USE_BACKEND_PROXY && BACKEND_URL
+		});
+		
+		if (isLiveMode() && data.data.status === 'success') {
+			console.log('💰 LIVE PAYMENT SUCCESSFUL - Real money received!');
+		}
+		
 		return {
 			success: true,
 			data: data.data,
@@ -274,7 +323,46 @@ export const formatPaymentMethodName = (method) => {
  * Check if Paystack is available
  */
 export const isPaystackAvailable = () => {
-	return !!PAYSTACK_SECRET_KEY;
+	// Available if we have secret key OR backend proxy configured
+	return !!PAYSTACK_SECRET_KEY || (USE_BACKEND_PROXY && !!BACKEND_URL);
+};
+
+/**
+ * Check if we're in live mode
+ */
+export const isLiveMode = () => {
+	// Check environment variable for backend proxy or secret key
+	if (USE_BACKEND_PROXY && BACKEND_URL) {
+		return import.meta.env.VITE_PAYSTACK_MODE === 'live';
+	}
+	return PAYSTACK_SECRET_KEY?.startsWith('sk_live_');
+};
+
+/**
+ * Check if we're in test mode
+ */
+export const isTestMode = () => {
+	// Check environment variable for backend proxy or secret key
+	if (USE_BACKEND_PROXY && BACKEND_URL) {
+		return import.meta.env.VITE_PAYSTACK_MODE === 'test';
+	}
+	return PAYSTACK_SECRET_KEY?.startsWith('sk_test_');
+};
+
+/**
+ * Get current mode (live, test, or demo)
+ */
+export const getCurrentMode = () => {
+	// Backend proxy mode detection
+	if (USE_BACKEND_PROXY && BACKEND_URL) {
+		return import.meta.env.VITE_PAYSTACK_MODE || 'test';
+	}
+	
+	// Direct API mode detection
+	if (!PAYSTACK_SECRET_KEY) return 'demo';
+	if (isLiveMode()) return 'live';
+	if (isTestMode()) return 'test';
+	return 'unknown';
 };
 
 /**

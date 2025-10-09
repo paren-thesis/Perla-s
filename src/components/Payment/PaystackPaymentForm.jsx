@@ -12,7 +12,10 @@ import {
     isPaystackAvailable,
     getPaystackErrorMessage,
     simulatePaymentSuccess,
-    openPaystackPopup
+    openPaystackPopup,
+    getCurrentMode,
+    isLiveMode,
+    isTestMode
 } from '../../services/paystackService';
 
 const PaystackPaymentForm = ({
@@ -30,13 +33,22 @@ const PaystackPaymentForm = ({
     const [success, setSuccess] = useState('');
     const [isPaystackReady, setIsPaystackReady] = useState(false);
     const [transactionRef, setTransactionRef] = useState(null);
+    const [currentMode, setCurrentMode] = useState('demo');
 
     const currencies = getSupportedCurrencies();
     const channels = getSupportedChannels();
 
-    // Check if Paystack is available
+    // Check if Paystack is available and get current mode
     useEffect(() => {
         setIsPaystackReady(isPaystackAvailable());
+        setCurrentMode(getCurrentMode());
+        
+        // Log current mode for debugging
+        console.log('PayStack Mode:', getCurrentMode().toUpperCase());
+        
+        if (isLiveMode()) {
+            console.warn('🚨 LIVE MODE ACTIVE - Real money transactions enabled!');
+        }
     }, []);
 
     const handleEmailChange = (e) => {
@@ -139,7 +151,7 @@ const PaystackPaymentForm = ({
 
         try {
             // For demo purposes, simulate payment if no API key
-            if (!import.meta.env.VITE_PAYSTACK_SECRET_KEY) {
+            if (currentMode === 'demo') {
                 const result = await simulatePaymentSuccess(orderData);
                 if (result.success) {
                     setSuccess('Payment successful! (Demo Mode)');
@@ -149,6 +161,23 @@ const PaystackPaymentForm = ({
                     onPaymentError('Payment failed');
                 }
                 return;
+            }
+            
+            // Live mode confirmation
+            if (currentMode === 'live') {
+                const confirmed = window.confirm(
+                    `🚨 LIVE PAYMENT CONFIRMATION\n\n` +
+                    `Amount: ₵${totalAmount.toFixed(2)}\n` +
+                    `Phone: ${phoneNumber}\n` +
+                    `Email: ${email}\n\n` +
+                    `This will charge REAL MONEY from the customer's mobile money account.\n\n` +
+                    `Are you absolutely sure you want to proceed?`
+                );
+                
+                if (!confirmed) {
+                    setError('Payment cancelled by user');
+                    return;
+                }
             }
 
             // Create payment data
@@ -198,9 +227,18 @@ const PaystackPaymentForm = ({
                     <FaCreditCard className="mr-2 text-primary-500" />
                     Payment Information
                 </h3>
-                <div className="flex items-center text-sm text-gray-500">
-                    <FaLock className="mr-1" />
-                    <span>Secure Payment</span>
+                <div className="flex items-center space-x-3">
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        currentMode === 'live' ? 'bg-red-100 text-red-800' :
+                        currentMode === 'test' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
+                        {currentMode.toUpperCase()} MODE
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                        <FaLock className="mr-1" />
+                        <span>Secure Payment</span>
+                    </div>
                 </div>
             </div>
 
@@ -318,16 +356,46 @@ const PaystackPaymentForm = ({
                     </div>
                 </div>
 
-                {/* Demo Notice */}
-                {!import.meta.env.VITE_PAYSTACK_SECRET_KEY && (
+                {/* Mode-specific notices */}
+                {currentMode === 'demo' && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start">
+                            <FaExclamationTriangle className="mr-2 mt-0.5 text-gray-500" />
+                            <div>
+                                <p className="text-sm font-medium text-gray-800">Demo Mode</p>
+                                <p className="text-xs text-gray-700 mt-1">
+                                    This is a demo payment. No real charges will be made.
+                                    Add your PayStack API keys to enable real payments.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {currentMode === 'test' && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-start">
                             <FaExclamationTriangle className="mr-2 mt-0.5 text-yellow-500" />
                             <div>
-                                <p className="text-sm font-medium text-yellow-800">Demo Mode</p>
+                                <p className="text-sm font-medium text-yellow-800">Test Mode</p>
                                 <p className="text-xs text-yellow-700 mt-1">
-                                    This is a demo payment. No real charges will be made.
-                                    Add your Paystack Secret Key to enable real payments.
+                                    Using PayStack sandbox. Test transactions only - no real money charged.
+                                    Use PayStack test phone numbers for mobile money.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {currentMode === 'live' && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-start">
+                            <FaExclamationTriangle className="mr-2 mt-0.5 text-red-500" />
+                            <div>
+                                <p className="text-sm font-medium text-red-800">🚨 LIVE MODE - Real Money</p>
+                                <p className="text-xs text-red-700 mt-1">
+                                    <strong>WARNING:</strong> This will charge real money from the customer's mobile money account.
+                                    Ensure all details are correct before proceeding.
                                 </p>
                             </div>
                         </div>
@@ -351,7 +419,9 @@ const PaystackPaymentForm = ({
                     ) : (
                         <>
                             <FaLock className="mr-2" />
-                            Pay {formatAmount(totalAmount, 'GHS')}
+                            {currentMode === 'live' ? '💰 PAY (REAL MONEY)' : 
+                             currentMode === 'test' ? '🧪 PAY (TEST)' : 
+                             '🎭 PAY (DEMO)'} {formatAmount(totalAmount, 'GHS')}
                         </>
                     )}
                 </button>
