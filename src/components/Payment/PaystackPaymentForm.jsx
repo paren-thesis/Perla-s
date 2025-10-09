@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { usePaystackPayment } from 'react-paystack';
-import { FaCreditCard, FaLock, FaCheck, FaExclamationTriangle, FaEnvelope, FaMoneyBillWave } from 'react-icons/fa';
+import { FaCreditCard, FaLock, FaCheck, FaExclamationTriangle, FaEnvelope, FaMobile } from 'react-icons/fa';
 import {
-    initializePaystack,
+    initializeTransaction,
+    verifyTransaction,
     createPaymentData,
     formatAmount,
     validateEmail,
     validateAmount,
     getSupportedCurrencies,
+    getSupportedChannels,
     isPaystackAvailable,
     getPaystackErrorMessage,
-    simulatePaymentSuccess
+    simulatePaymentSuccess,
+    openPaystackPopup
 } from '../../services/paystackService';
 
 const PaystackPaymentForm = ({
@@ -21,36 +23,21 @@ const PaystackPaymentForm = ({
     className = ""
 }) => {
     const [email, setEmail] = useState('');
-    const [selectedCurrency, setSelectedCurrency] = useState('GHS');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [selectedChannel, setSelectedChannel] = useState('mobile_money');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isPaystackReady, setIsPaystackReady] = useState(false);
+    const [transactionRef, setTransactionRef] = useState(null);
 
     const currencies = getSupportedCurrencies();
+    const channels = getSupportedChannels();
 
     // Check if Paystack is available
     useEffect(() => {
         setIsPaystackReady(isPaystackAvailable());
     }, []);
-
-    // Initialize Paystack payment
-    const config = initializePaystack({
-        email,
-        amount: orderData.total + (orderData.deliveryFee || 0),
-        currency: selectedCurrency,
-        reference: `PAYSTACK_${orderData.orderId}_${Date.now()}`,
-        metadata: {
-            orderId: orderData.orderId,
-            userId: orderData.userId,
-            deliveryType: orderData.deliveryType,
-            deliveryAddress: orderData.deliveryAddress || null
-        },
-        onSuccess: handlePaymentSuccess,
-        onClose: handlePaymentClose
-    });
-
-    const initializePayment = usePaystackPayment(config);
 
     const handleEmailChange = (e) => {
         const value = e.target.value;
@@ -62,8 +49,18 @@ const PaystackPaymentForm = ({
         }
     };
 
-    const handleCurrencyChange = (e) => {
-        setSelectedCurrency(e.target.value);
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        setPhoneNumber(value);
+
+        // Clear errors when user starts typing
+        if (error) {
+            setError('');
+        }
+    };
+
+    const handleChannelChange = (e) => {
+        setSelectedChannel(e.target.value);
     };
 
     const validateForm = () => {
@@ -77,6 +74,16 @@ const PaystackPaymentForm = ({
             return false;
         }
 
+        if (selectedChannel === 'mobile_money' && !phoneNumber) {
+            setError('Phone number is required for Mobile Money');
+            return false;
+        }
+
+        if (selectedChannel === 'mobile_money' && phoneNumber && !phoneNumber.match(/^\+?233[0-9]{9}$/)) {
+            setError('Please enter a valid Ghana phone number (e.g., +233241234567)');
+            return false;
+        }
+
         if (!validateAmount(orderData.total)) {
             setError('Invalid order amount');
             return false;
@@ -85,15 +92,33 @@ const PaystackPaymentForm = ({
         return true;
     };
 
-    const handlePaymentSuccess = (response) => {
-        console.log('Payment successful:', response);
-        setSuccess('Payment successful!');
-        onPaymentSuccess(response);
+    const handlePaymentSuccess = async (reference) => {
+        console.log('Payment successful, verifying:', reference);
+        setIsLoading(true);
+        
+        try {
+            // Verify the transaction
+            const verification = await verifyTransaction(reference);
+            
+            if (verification.success && verification.data.status === 'success') {
+                setSuccess('Payment verified successfully!');
+                onPaymentSuccess(verification.data);
+            } else {
+                setError('Payment verification failed. Please contact support.');
+                onPaymentError('Payment verification failed');
+            }
+        } catch (error) {
+            console.error('Verification error:', error);
+            setError('Failed to verify payment. Please contact support.');
+            onPaymentError('Verification failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handlePaymentClose = () => {
-        console.log('Payment closed');
-        setError('Payment was cancelled');
+        console.log('Payment popup closed');
+        setError('Payment was cancelled or popup was closed');
     };
 
     const handleSubmit = async (e) => {
@@ -114,11 +139,11 @@ const PaystackPaymentForm = ({
 
         try {
             // For demo purposes, simulate payment if no API key
-            if (!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY) {
+            if (!import.meta.env.VITE_PAYSTACK_SECRET_KEY) {
                 const result = await simulatePaymentSuccess(orderData);
                 if (result.success) {
                     setSuccess('Payment successful! (Demo Mode)');
-                    onPaymentSuccess(result.payment);
+                    onPaymentSuccess(result.data);
                 } else {
                     setError('Payment failed');
                     onPaymentError('Payment failed');
@@ -126,10 +151,37 @@ const PaystackPaymentForm = ({
                 return;
             }
 
-            // Real Paystack payment
-            initializePayment();
+            // Create payment data
+            const paymentData = createPaymentData(
+                orderData, 
+                email, 
+                [selectedChannel]
+            );
+
+            // Add phone number for mobile money
+            if (selectedChannel === 'mobile_money') {
+                paymentData.metadata.customer_phone = phoneNumber;
+            }
+
+            // Initialize transaction
+            const initResult = await initializeTransaction(paymentData);
+            
+            if (!initResult.success) {
+                throw new Error(initResult.error);
+            }
+
+            const { authorization_url, reference } = initResult.data;
+            setTransactionRef(reference);
+
+            // Open Paystack popup
+            openPaystackPopup(
+                authorization_url,
+                handlePaymentSuccess,
+                handlePaymentClose
+            );
+
         } catch (error) {
-            console.error('Payment error:', error);
+            console.error('Payment initialization error:', error);
             setError(getPaystackErrorMessage(error.message));
             onPaymentError(error.message);
         } finally {
@@ -157,13 +209,13 @@ const PaystackPaymentForm = ({
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600">Order Total</span>
                     <span className="text-xl font-bold text-gray-900">
-                        {formatAmount(totalAmount, selectedCurrency)}
+                        {formatAmount(totalAmount, 'GHS')}
                     </span>
                 </div>
                 {orderData.deliveryType === 'delivery' && orderData.deliveryFee > 0 && (
                     <div className="flex justify-between items-center mt-2 text-sm">
                         <span className="text-gray-500">Delivery Fee</span>
-                        <span className="text-gray-700">{formatAmount(orderData.deliveryFee, selectedCurrency)}</span>
+                        <span className="text-gray-700">{formatAmount(orderData.deliveryFee, 'GHS')}</span>
                     </div>
                 )}
             </div>
@@ -204,50 +256,70 @@ const PaystackPaymentForm = ({
                     </p>
                 </div>
 
-                {/* Currency Selection */}
+                {/* Phone Number for Mobile Money */}
+                {selectedChannel === 'mobile_money' && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <FaMobile className="inline mr-2" />
+                            Mobile Money Number
+                        </label>
+                        <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={handlePhoneChange}
+                            placeholder="+233241234567"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            required={selectedChannel === 'mobile_money'}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Enter your Ghana mobile money number
+                        </p>
+                    </div>
+                )}
+
+                {/* Payment Channel Selection */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <FaMoneyBillWave className="inline mr-2" />
-                        Currency
+                        <FaCreditCard className="inline mr-2" />
+                        Payment Method
                     </label>
                     <select
-                        value={selectedCurrency}
-                        onChange={handleCurrencyChange}
+                        value={selectedChannel}
+                        onChange={handleChannelChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     >
-                        {currencies.map((currency) => (
-                            <option key={currency.code} value={currency.code}>
-                                {currency.symbol} {currency.name} ({currency.code})
+                        {channels.map((channel) => (
+                            <option key={channel.code} value={channel.code}>
+                                {channel.icon} {channel.name}
                             </option>
                         ))}
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                        Mobile Money is the preferred payment method in Ghana
+                    </p>
                 </div>
 
                 {/* Payment Methods Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">Accepted Payment Methods</h4>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
-                        <div className="flex items-center">
-                            <span className="mr-2">💳</span>
-                            <span>Credit/Debit Cards</span>
-                        </div>
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">Ghana Mobile Money Providers</h4>
+                    <div className="grid grid-cols-1 gap-2 text-xs text-blue-800">
                         <div className="flex items-center">
                             <span className="mr-2">📱</span>
-                            <span>Mobile Money</span>
+                            <span>MTN Mobile Money • Vodafone Cash • AirtelTigo Money</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="mr-2">💳</span>
+                            <span>Credit/Debit Cards (Visa, Mastercard)</span>
                         </div>
                         <div className="flex items-center">
                             <span className="mr-2">🏦</span>
-                            <span>Bank Transfer</span>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="mr-2">💰</span>
-                            <span>Paystack Wallet</span>
+                            <span>Bank Transfer • USSD</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Demo Notice */}
-                {!import.meta.env.VITE_PAYSTACK_PUBLIC_KEY && (
+                {!import.meta.env.VITE_PAYSTACK_SECRET_KEY && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-start">
                             <FaExclamationTriangle className="mr-2 mt-0.5 text-yellow-500" />
@@ -255,7 +327,7 @@ const PaystackPaymentForm = ({
                                 <p className="text-sm font-medium text-yellow-800">Demo Mode</p>
                                 <p className="text-xs text-yellow-700 mt-1">
                                     This is a demo payment. No real charges will be made.
-                                    Add your Paystack API key to enable real payments.
+                                    Add your Paystack Secret Key to enable real payments.
                                 </p>
                             </div>
                         </div>
@@ -279,7 +351,7 @@ const PaystackPaymentForm = ({
                     ) : (
                         <>
                             <FaLock className="mr-2" />
-                            Pay {formatAmount(totalAmount, selectedCurrency)}
+                            Pay {formatAmount(totalAmount, 'GHS')}
                         </>
                     )}
                 </button>
