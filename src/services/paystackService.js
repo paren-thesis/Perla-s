@@ -323,8 +323,10 @@ export const formatPaymentMethodName = (method) => {
  * Check if Paystack is available
  */
 export const isPaystackAvailable = () => {
-	// Available if we have secret key OR backend proxy configured
-	return !!PAYSTACK_SECRET_KEY || (USE_BACKEND_PROXY && !!BACKEND_URL);
+	// Available if we have public key AND (secret key OR backend proxy configured)
+	// We need public key for the popup and secret key/proxy for initialization
+	const hasCredentials = !!PAYSTACK_SECRET_KEY || (USE_BACKEND_PROXY && !!BACKEND_URL);
+	return !!PAYSTACK_PUBLIC_KEY && (hasCredentials || getCurrentMode() === 'demo');
 };
 
 /**
@@ -340,7 +342,12 @@ export const isLiveMode = () => {
 	}
 	
 	// Priority 3: Secret key prefix
-	return PAYSTACK_SECRET_KEY?.startsWith('sk_live_');
+	if (PAYSTACK_SECRET_KEY?.startsWith('sk_live_')) return true;
+
+	// Priority 4: Public key prefix (fallback for UI detection)
+	if (PAYSTACK_PUBLIC_KEY?.startsWith('pk_live_')) return true;
+
+	return false;
 };
 
 /**
@@ -356,7 +363,12 @@ export const isTestMode = () => {
 	}
 	
 	// Priority 3: Secret key prefix
-	return PAYSTACK_SECRET_KEY?.startsWith('sk_test_');
+	if (PAYSTACK_SECRET_KEY?.startsWith('sk_test_')) return true;
+
+	// Priority 4: Public key prefix
+	if (PAYSTACK_PUBLIC_KEY?.startsWith('pk_test_')) return true;
+
+	return false;
 };
 
 /**
