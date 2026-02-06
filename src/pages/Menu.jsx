@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useFirestore } from "../contexts/FirestoreContext";
 import MenuHeader from "../components/Menu/MenuHeader";
 import MenuGrid from "../components/Menu/MenuGrid";
 import Cart from "../components/Menu/Cart";
