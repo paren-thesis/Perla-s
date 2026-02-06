@@ -118,7 +118,19 @@ export function FirestoreProvider({ children }) {
 
       loadCart();
     } else {
-      setCart({ items: [], total: 0 });
+      // Load from localStorage for guests
+      const savedCart = localStorage.getItem('perlasCart');
+      if (savedCart) {
+        try {
+          const items = JSON.parse(savedCart);
+          setCart({ items: items, total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0) });
+        } catch (e) {
+          console.error('Failed to parse local cart:', e);
+          setCart({ items: [], total: 0 });
+        }
+      } else {
+        setCart({ items: [], total: 0 });
+      }
     }
   }, [currentUser]);
 
@@ -240,7 +252,7 @@ export function FirestoreProvider({ children }) {
   // User profile operations
   const updateProfile = async (updates) => {
     if (!currentUser) throw new Error('User not authenticated');
-    
+
     try {
       const result = await updateUserProfile(currentUser.uid, updates);
       if (result.success) {
@@ -255,28 +267,93 @@ export function FirestoreProvider({ children }) {
     }
   };
 
+  // Cart synchronization logic
+  const syncLocalCart = async (localItems) => {
+    if (!currentUser || !localItems || localItems.length === 0) return;
+
+    try {
+      // Merge local items with existing Firestore items or just replace?
+      // For now, if we are logging in, we'll merge them.
+      // Getting existing cart first
+      const currentCartResult = await getCart(currentUser.uid);
+      let mergedItems = [];
+
+      if (currentCartResult.success && currentCartResult.data.items) {
+        const existingItems = currentCartResult.data.items;
+
+        // Merge strategy: if item exists in both, use the larger quantity or local?
+        // Let's go with local items take priority for now as they are the latest action.
+        mergedItems = [...existingItems];
+
+        localItems.forEach(localItem => {
+          const index = mergedItems.findIndex(i => i.id === localItem.id);
+          if (index > -1) {
+            mergedItems[index].quantity = Math.max(mergedItems[index].quantity, localItem.quantity);
+          } else {
+            mergedItems.push(localItem);
+          }
+        });
+      } else {
+        mergedItems = localItems;
+      }
+
+      const result = await saveCart(currentUser.uid, mergedItems);
+      if (result.success) {
+        setCart(result.data);
+        localStorage.removeItem('perlasCart'); // Clear local after successful sync
+        return true;
+      }
+    } catch (err) {
+      console.error('Error syncing cart:', err);
+    }
+    return false;
+  };
+
+  // Auto-sync cart on login
+  useEffect(() => {
+    if (currentUser) {
+      const savedCart = localStorage.getItem('perlasCart');
+      if (savedCart) {
+        try {
+          const items = JSON.parse(savedCart);
+          if (items && items.length > 0) {
+            syncLocalCart(items);
+          }
+        } catch (e) {
+          console.error('Failed to parse local cart:', e);
+        }
+      }
+    }
+  }, [currentUser]);
+
   // Cart operations
   const addToCart = async (item) => {
-    if (!currentUser) throw new Error('User not authenticated');
-    
     try {
-      const newCart = { ...cart };
-      const existingItem = newCart.items.find(i => i.id === item.id);
-      
+      const newItems = [...(cart.items || [])];
+      const existingItem = newItems.find(i => i.id === item.id);
+
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        newCart.items.push({ ...item, quantity: 1 });
+        newItems.push({ ...item, quantity: 1 });
       }
-      
-      newCart.total = newCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      const result = await saveCart(currentUser.uid, newCart.items);
-      if (result.success) {
-        setCart(newCart);
-        return true;
+
+      const newTotal = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const newCart = { items: newItems, total: newTotal };
+
+      if (currentUser) {
+        const result = await saveCart(currentUser.uid, newItems);
+        if (result.success) {
+          setCart(newCart);
+          return true;
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        throw new Error(result.error);
+        // Guest mode
+        setCart(newCart);
+        localStorage.setItem('perlasCart', JSON.stringify(newItems));
+        return true;
       }
     } catch (err) {
       setError(err.message);
@@ -285,27 +362,33 @@ export function FirestoreProvider({ children }) {
   };
 
   const updateCartItem = async (itemId, quantity) => {
-    if (!currentUser) throw new Error('User not authenticated');
-    
     try {
-      const newCart = { ...cart };
+      let newItems = [...(cart.items || [])];
       if (quantity <= 0) {
-        newCart.items = newCart.items.filter(item => item.id !== itemId);
+        newItems = newItems.filter(item => item.id !== itemId);
       } else {
-        const item = newCart.items.find(i => i.id === itemId);
+        const item = newItems.find(i => i.id === itemId);
         if (item) {
           item.quantity = quantity;
         }
       }
-      
-      newCart.total = newCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      const result = await saveCart(currentUser.uid, newCart.items);
-      if (result.success) {
-        setCart(newCart);
-        return true;
+
+      const newTotal = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const newCart = { items: newItems, total: newTotal };
+
+      if (currentUser) {
+        const result = await saveCart(currentUser.uid, newItems);
+        if (result.success) {
+          setCart(newCart);
+          return true;
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        throw new Error(result.error);
+        // Guest mode
+        setCart(newCart);
+        localStorage.setItem('perlasCart', JSON.stringify(newItems));
+        return true;
       }
     } catch (err) {
       setError(err.message);
@@ -314,19 +397,24 @@ export function FirestoreProvider({ children }) {
   };
 
   const removeFromCart = async (itemId) => {
-    if (!currentUser) throw new Error('User not authenticated');
-    
     try {
-      const newCart = { ...cart };
-      newCart.items = newCart.items.filter(item => item.id !== itemId);
-      newCart.total = newCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      const result = await saveCart(currentUser.uid, newCart.items);
-      if (result.success) {
-        setCart(newCart);
-        return true;
+      const newItems = (cart.items || []).filter(item => item.id !== itemId);
+      const newTotal = newItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const newCart = { items: newItems, total: newTotal };
+
+      if (currentUser) {
+        const result = await saveCart(currentUser.uid, newItems);
+        if (result.success) {
+          setCart(newCart);
+          return true;
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        throw new Error(result.error);
+        // Guest mode
+        setCart(newCart);
+        localStorage.setItem('perlasCart', JSON.stringify(newItems));
+        return true;
       }
     } catch (err) {
       setError(err.message);
@@ -335,15 +423,19 @@ export function FirestoreProvider({ children }) {
   };
 
   const clearUserCart = async () => {
-    if (!currentUser) throw new Error('User not authenticated');
-    
     try {
-      const result = await clearCart(currentUser.uid);
-      if (result.success) {
-        setCart({ items: [], total: 0 });
-        return true;
+      if (currentUser) {
+        const result = await clearCart(currentUser.uid);
+        if (result.success) {
+          setCart({ items: [], total: 0 });
+          return true;
+        } else {
+          throw new Error(result.error);
+        }
       } else {
-        throw new Error(result.error);
+        setCart({ items: [], total: 0 });
+        localStorage.removeItem('perlasCart');
+        return true;
       }
     } catch (err) {
       setError(err.message);
@@ -354,7 +446,7 @@ export function FirestoreProvider({ children }) {
   // Booking operations
   const createUserBooking = async (bookingData) => {
     if (!currentUser) throw new Error('User not authenticated');
-    
+
     try {
       const result = await createBooking({
         ...bookingData,
@@ -375,7 +467,7 @@ export function FirestoreProvider({ children }) {
   // Order operations
   const createUserOrder = async (orderData) => {
     if (!currentUser) throw new Error('User not authenticated');
-    
+
     try {
       const result = await createOrder({
         ...orderData,
@@ -396,7 +488,7 @@ export function FirestoreProvider({ children }) {
   // Delivery address operations
   const saveUserAddress = async (addressData) => {
     if (!currentUser) throw new Error('User not authenticated');
-    
+
     try {
       const result = await saveDeliveryAddress(currentUser.uid, addressData);
       if (result.success) {
@@ -421,29 +513,32 @@ export function FirestoreProvider({ children }) {
     deliveryAddresses,
     loading,
     error,
-    
+
     // Menu operations
     getMenuByCategory,
     getSingleMenuItem,
-    
+
     // User profile operations
     updateProfile,
-    
+
     // Cart operations
     addToCart,
     updateCartItem,
     removeFromCart,
     clearUserCart,
-    
+
     // Booking operations
     createUserBooking,
-    
+
     // Order operations
     createUserOrder,
-    
+
     // Delivery address operations
     saveUserAddress,
-    
+
+    // Cart sync
+    syncLocalCart,
+
     // Utility
     setError
   };

@@ -15,14 +15,24 @@ function Menu() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { currentUser } = useAuth();
+	const {
+		cart,
+		addToCart: addToFirestoreCart,
+		updateCartItem,
+		removeFromCart: removeFromFirestoreCart,
+		clearUserCart,
+		syncLocalCart
+	} = useFirestore();
+
 	const [selectedCategory, setSelectedCategory] = useState("all");
-	const [cartItems, setCartItems] = useState([]);
 	const [isCartOpen, setIsCartOpen] = useState(false);
 	const [showLoginDialog, setShowLoginDialog] = useState(false);
 	const [showClearCartDialog, setShowClearCartDialog] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isCategoryChanging, setIsCategoryChanging] = useState(false);
 
+	// Source of truth for cart items
+	const cartItems = cart.items || [];
 
 	// Extract all image sources for preloading
 	const allImageSources = useMemo(() => {
@@ -41,19 +51,6 @@ function Menu() {
 		delay: 200
 	});
 
-	// Reduce initial loading time and consider image loading progress
-	useEffect(() => {
-		const savedCart = localStorage.getItem("perlasCart");
-		if (savedCart) {
-			setCartItems(JSON.parse(savedCart));
-		}
-	}, []);
-
-	// Save cart items to localStorage whenever they change
-	useEffect(() => {
-		localStorage.setItem("perlasCart", JSON.stringify(cartItems));
-	}, [cartItems]);
-
 	// Check for cart restoration after login redirect
 	useEffect(() => {
 		if (location.state?.fromLogin && cartItems.length > 0) {
@@ -67,7 +64,7 @@ function Menu() {
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setIsLoading(false);
-		}, 800); // Reduced from 1500ms
+		}, 800);
 		return () => clearTimeout(timer);
 	}, []);
 
@@ -126,56 +123,32 @@ function Menu() {
 		[selectedCategory]
 	);
 
-	const addToCart = (item) => {
-		setCartItems((prev) => {
-			const found = prev.find((it) => it.id === item.id);
-			if (found) {
-				return prev.map((it) =>
-					it.id === item.id
-						? { ...it, quantity: it.quantity + 1 }
-						: it
-				);
-			}
-			return [
-				...prev,
-				{
-					id: item.id,
-					name: item.name,
-					price: item.price,
-					image: item.image,
-					quantity: 1,
-				},
-			];
-		});
+	const addToCart = async (item) => {
+		try {
+			await addToFirestoreCart(item);
+		} catch (error) {
+			console.error("Error adding to cart:", error);
+			alert("Failed to add to cart. Please try again.");
+		}
 	};
 
 	const increment = (id) => {
-		setCartItems((prev) =>
-			prev.map((it) =>
-				it.id === id ? { ...it, quantity: it.quantity + 1 } : it
-			)
-		);
+		const item = cartItems.find(i => i.id === id);
+		if (item) updateCartItem(id, item.quantity + 1);
 	};
 
 	const decrement = (id) => {
-		setCartItems((prev) => {
-			const target = prev.find((it) => it.id === id);
-			if (!target) return prev;
-			if (target.quantity <= 1) return prev.filter((it) => it.id !== id);
-			return prev.map((it) =>
-				it.id === id ? { ...it, quantity: it.quantity - 1 } : it
-			);
-		});
+		const item = cartItems.find(i => i.id === id);
+		if (item) updateCartItem(id, item.quantity - 1);
 	};
 
 	const removeFromCart = (id) => {
-		setCartItems((prev) => prev.filter((it) => it.id !== id));
+		removeFromFirestoreCart(id);
 	};
 
 	const clearCart = () => {
-		setCartItems([]);
+		clearUserCart();
 		setShowClearCartDialog(false);
-		localStorage.removeItem("perlasCart");
 	};
 
 	const handleSubmit = () => {
