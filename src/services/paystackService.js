@@ -331,10 +331,15 @@ export const isPaystackAvailable = () => {
  * Check if we're in live mode
  */
 export const isLiveMode = () => {
-	// Check environment variable for backend proxy or secret key
+	// Priority 1: Environment variable mode
+	if (import.meta.env.VITE_PAYSTACK_MODE === 'live') return true;
+	
+	// Priority 2: Backend proxy mode (if no explicit env mode)
 	if (USE_BACKEND_PROXY && BACKEND_URL) {
 		return import.meta.env.VITE_PAYSTACK_MODE === 'live';
 	}
+	
+	// Priority 3: Secret key prefix
 	return PAYSTACK_SECRET_KEY?.startsWith('sk_live_');
 };
 
@@ -342,10 +347,15 @@ export const isLiveMode = () => {
  * Check if we're in test mode
  */
 export const isTestMode = () => {
-	// Check environment variable for backend proxy or secret key
+	// Priority 1: Environment variable mode
+	if (import.meta.env.VITE_PAYSTACK_MODE === 'test') return true;
+
+	// Priority 2: Backend proxy mode
 	if (USE_BACKEND_PROXY && BACKEND_URL) {
 		return import.meta.env.VITE_PAYSTACK_MODE === 'test';
 	}
+	
+	// Priority 3: Secret key prefix
 	return PAYSTACK_SECRET_KEY?.startsWith('sk_test_');
 };
 
@@ -353,16 +363,17 @@ export const isTestMode = () => {
  * Get current mode (live, test, or demo)
  */
 export const getCurrentMode = () => {
-	// Backend proxy mode detection
-	if (USE_BACKEND_PROXY && BACKEND_URL) {
-		return import.meta.env.VITE_PAYSTACK_MODE || 'test';
-	}
-	
-	// Direct API mode detection
-	if (!PAYSTACK_SECRET_KEY) return 'demo';
+	// Explicit environment mode takes absolute priority
+	const envMode = import.meta.env.VITE_PAYSTACK_MODE;
+	if (envMode === 'live') return 'live';
+	if (envMode === 'test') return 'test';
+
+	// If no explicit mode, fall back to detection
+	if (!PAYSTACK_SECRET_KEY && !USE_BACKEND_PROXY) return 'demo';
 	if (isLiveMode()) return 'live';
 	if (isTestMode()) return 'test';
-	return 'unknown';
+	
+	return 'demo';
 };
 
 /**

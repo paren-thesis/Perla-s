@@ -42,10 +42,10 @@ const PaystackPaymentForm = ({
     useEffect(() => {
         setIsPaystackReady(isPaystackAvailable());
         setCurrentMode(getCurrentMode());
-        
+
         // Log current mode for debugging
         console.log('PayStack Mode:', getCurrentMode().toUpperCase());
-        
+
         if (isLiveMode()) {
             console.warn('🚨 LIVE MODE ACTIVE - Real money transactions enabled!');
         }
@@ -107,11 +107,11 @@ const PaystackPaymentForm = ({
     const handlePaymentSuccess = async (reference) => {
         console.log('Payment successful, verifying:', reference);
         setIsLoading(true);
-        
+
         try {
             // Verify the transaction
             const verification = await verifyTransaction(reference);
-            
+
             if (verification.success && verification.data.status === 'success') {
                 setSuccess('Payment verified successfully!');
                 onPaymentSuccess(verification.data);
@@ -162,7 +162,7 @@ const PaystackPaymentForm = ({
                 }
                 return;
             }
-            
+
             // Live mode confirmation
             if (currentMode === 'live') {
                 const confirmed = window.confirm(
@@ -173,7 +173,7 @@ const PaystackPaymentForm = ({
                     `This will charge REAL MONEY from the customer's mobile money account.\n\n` +
                     `Are you absolutely sure you want to proceed?`
                 );
-                
+
                 if (!confirmed) {
                     setError('Payment cancelled by user');
                     return;
@@ -182,8 +182,8 @@ const PaystackPaymentForm = ({
 
             // Create payment data
             const paymentData = createPaymentData(
-                orderData, 
-                email, 
+                orderData,
+                email,
                 [selectedChannel]
             );
 
@@ -194,7 +194,7 @@ const PaystackPaymentForm = ({
 
             // Initialize transaction
             const initResult = await initializeTransaction(paymentData);
-            
+
             if (!initResult.success) {
                 throw new Error(initResult.error);
             }
@@ -228,11 +228,10 @@ const PaystackPaymentForm = ({
                     Payment Information
                 </h3>
                 <div className="flex items-center space-x-3">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        currentMode === 'live' ? 'bg-red-100 text-red-800' :
-                        currentMode === 'test' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                    }`}>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${currentMode === 'live' ? 'bg-red-100 text-red-800' :
+                            currentMode === 'test' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                        }`}>
                         {currentMode.toUpperCase()} MODE
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
@@ -275,56 +274,51 @@ const PaystackPaymentForm = ({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Mobile Money Number (Always visible and prioritized for Ghana) */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <FaMobile className="inline mr-2 text-primary-500" />
+                        Ghana Mobile Money Number
+                    </label>
+                    <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={handlePhoneChange}
+                        placeholder="+233241234567"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-white font-medium shadow-sm"
+                        required
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                        Use your MTN, Vodafone, or AirtelTigo number
+                    </p>
+                </div>
+
                 {/* Email Input */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <FaEnvelope className="inline mr-2" />
-                        Email Address
+                        <FaEnvelope className="inline mr-2 text-primary-500" />
+                        Receipt Email
                     </label>
                     <input
                         type="email"
                         value={email}
                         onChange={handleEmailChange}
                         placeholder="your@email.com"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors shadow-sm"
                         required
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                        We'll send your receipt to this email
-                    </p>
                 </div>
 
-                {/* Phone Number for Mobile Money */}
-                {selectedChannel === 'mobile_money' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            <FaMobile className="inline mr-2" />
-                            Mobile Money Number
-                        </label>
-                        <input
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={handlePhoneChange}
-                            placeholder="+233241234567"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                            required={selectedChannel === 'mobile_money'}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Enter your Ghana mobile money number
-                        </p>
-                    </div>
-                )}
-
-                {/* Payment Channel Selection */}
+                {/* Payment Channel Selection (Simplified) */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <FaCreditCard className="inline mr-2" />
-                        Payment Method
+                        <FaCreditCard className="inline mr-2 text-primary-500" />
+                        Other Payment Methods
                     </label>
                     <select
                         value={selectedChannel}
                         onChange={handleChannelChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors shadow-sm"
                     >
                         {channels.map((channel) => (
                             <option key={channel.code} value={channel.code}>
@@ -332,26 +326,28 @@ const PaystackPaymentForm = ({
                             </option>
                         ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Mobile Money is the preferred payment method in Ghana
-                    </p>
                 </div>
 
-                {/* Payment Methods Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">Ghana Mobile Money Providers</h4>
-                    <div className="grid grid-cols-1 gap-2 text-xs text-blue-800">
-                        <div className="flex items-center">
-                            <span className="mr-2">📱</span>
-                            <span>MTN Mobile Money • Vodafone Cash • AirtelTigo Money</span>
+                {/* Ghana Mobile Money Providers Info */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
+                    <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+                        <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded mr-2">SECURE</span>
+                        Accepted Payments
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3 text-xs text-blue-800">
+                        <div className="flex items-center space-x-3">
+                            <span className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">📱</span>
+                            <div>
+                                <p className="font-bold">Mobile Money (MTN, Vodafone, AirtelTigo)</p>
+                                <p className="text-[10px] opacity-75">Pay directly from your handset</p>
+                            </div>
                         </div>
-                        <div className="flex items-center">
-                            <span className="mr-2">💳</span>
-                            <span>Credit/Debit Cards (Visa, Mastercard)</span>
-                        </div>
-                        <div className="flex items-center">
-                            <span className="mr-2">🏦</span>
-                            <span>Bank Transfer • USSD</span>
+                        <div className="flex items-center space-x-3">
+                            <span className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">💳</span>
+                            <div>
+                                <p className="font-bold">Cards (Visa, Mastercard)</p>
+                                <p className="text-[10px] opacity-75">Ghanaian and International cards</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -364,38 +360,36 @@ const PaystackPaymentForm = ({
                             <div>
                                 <p className="text-sm font-medium text-gray-800">Demo Mode</p>
                                 <p className="text-xs text-gray-700 mt-1">
-                                    This is a demo payment. No real charges will be made.
-                                    Add your PayStack API keys to enable real payments.
+                                    Simulated payment. No charges will occur.
                                 </p>
                             </div>
                         </div>
                     </div>
                 )}
-                
+
                 {currentMode === 'test' && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div className="flex items-start">
                             <FaExclamationTriangle className="mr-2 mt-0.5 text-yellow-500" />
                             <div>
-                                <p className="text-sm font-medium text-yellow-800">Test Mode</p>
+                                <p className="text-sm font-medium text-yellow-800">PayStack Test Mode</p>
                                 <p className="text-xs text-yellow-700 mt-1">
-                                    Using PayStack sandbox. Test transactions only - no real money charged.
-                                    Use PayStack test phone numbers for mobile money.
+                                    Sandbox environment. No real money will be charged.
                                 </p>
                             </div>
                         </div>
                     </div>
                 )}
-                
+
                 {currentMode === 'live' && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-pulse">
                         <div className="flex items-start">
-                            <FaExclamationTriangle className="mr-2 mt-0.5 text-red-500" />
+                            <FaExclamationTriangle className="mr-2 mt-1 text-red-600" />
                             <div>
-                                <p className="text-sm font-medium text-red-800">🚨 LIVE MODE - Real Money</p>
-                                <p className="text-xs text-red-700 mt-1">
-                                    <strong>WARNING:</strong> This will charge real money from the customer's mobile money account.
-                                    Ensure all details are correct before proceeding.
+                                <p className="text-sm font-bold text-red-800">🚨 LIVE PAYMENT SYSTEM</p>
+                                <p className="text-xs text-red-700 mt-1 font-medium">
+                                    Final step: Real money will be deducted from your account.
+                                    Please verify the amount and phone number above.
                                 </p>
                             </div>
                         </div>
@@ -406,22 +400,24 @@ const PaystackPaymentForm = ({
                 <button
                     type="submit"
                     disabled={!isPaystackReady || isLoading || isProcessing}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${!isPaystackReady || isLoading || isProcessing
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-primary-500 text-white hover:bg-primary-600'
+                    className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform active:scale-[0.98] transition-all flex items-center justify-center ${!isPaystackReady || isLoading || isProcessing
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : currentMode === 'live'
+                            ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200'
+                            : 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-200'
                         }`}
                 >
                     {isLoading || isProcessing ? (
                         <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Processing Payment...
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                            Finalizing Transaction...
                         </>
                     ) : (
                         <>
-                            <FaLock className="mr-2" />
-                            {currentMode === 'live' ? '💰 PAY (REAL MONEY)' : 
-                             currentMode === 'test' ? '🧪 PAY (TEST)' : 
-                             '🎭 PAY (DEMO)'} {formatAmount(totalAmount, 'GHS')}
+                            <FaLock className="mr-3 text-sm opacity-80" />
+                            {currentMode === 'live' ? 'CONFIRM & PAY' :
+                                currentMode === 'test' ? 'PROCESS TEST' :
+                                    'PROCESS DEMO'} {formatAmount(totalAmount, 'GHS')}
                         </>
                     )}
                 </button>
