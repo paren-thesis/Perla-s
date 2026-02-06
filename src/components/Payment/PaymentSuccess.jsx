@@ -1,15 +1,17 @@
 import React from 'react';
 import { FaCheckCircle, FaReceipt, FaDownload, FaShare, FaHome, FaShoppingCart } from 'react-icons/fa';
+import { formatAmount } from '../../services/paystackService';
 
-const PaymentSuccess = ({ 
-  paymentIntent, 
+const PaymentSuccess = ({
+  paymentIntent, // This is data from Paystack verification
   orderData,
   onNewOrder,
   onBackToHome,
   className = ""
 }) => {
-  const formatDate = (timestamp) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+  const formatDate = (dateString) => {
+    if (!dateString) return new Date().toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -18,179 +20,128 @@ const PaymentSuccess = ({
     });
   };
 
-  const formatOrderId = (id) => {
-    return id.replace('pi_', 'ORD-').toUpperCase();
+  const formatOrderId = (ref) => {
+    if (!ref) return 'ORD-UNKNOWN';
+    // If it's a Paystack reference like PAYSTACK_ORD-123_456, extract the middle part
+    if (ref.startsWith('PAYSTACK_')) {
+      const parts = ref.split('_');
+      return parts[1] || ref;
+    }
+    return ref;
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-8 text-center ${className}`}>
-      {/* Success Icon */}
-      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <FaCheckCircle className="text-4xl text-green-600" />
-      </div>
-
-      {/* Success Message */}
-      <h2 className="text-3xl font-bold text-gray-900 mb-2">
-        Payment Successful!
-      </h2>
-      
-      <p className="text-gray-600 mb-8">
-        Your order has been confirmed and payment has been processed.
-      </p>
-
-      {/* Order Details */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <FaReceipt className="mr-2 text-primary-500" />
-          Order Details
-        </h3>
-        
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Order ID</span>
-            <span className="font-medium text-gray-900">
-              {formatOrderId(paymentIntent.id)}
-            </span>
-          </div>
-          
-          <div className="flex justify-between">
-            <span className="text-gray-600">Payment Date</span>
-            <span className="font-medium text-gray-900">
-              {formatDate(paymentIntent.created)}
-            </span>
-          </div>
-          
-          <div className="flex justify-between">
-            <span className="text-gray-600">Payment Method</span>
-            <span className="font-medium text-gray-900 capitalize">
-              {paymentIntent.payment_method?.type || 'Card'} ending in ****
-            </span>
-          </div>
-          
-          <div className="flex justify-between">
-            <span className="text-gray-600">Order Type</span>
-            <span className="font-medium text-gray-900 capitalize">
-              {orderData.deliveryType}
-            </span>
-          </div>
-          
-          {orderData.deliveryType === 'delivery' && orderData.deliveryAddress && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">Delivery Address</span>
-              <span className="font-medium text-gray-900 text-right max-w-xs">
-                {orderData.deliveryAddress}
-              </span>
-            </div>
-          )}
-          
-          <div className="border-t border-gray-200 pt-3">
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total Paid</span>
-              <span className="text-primary-600">
-                {formatAmount(paymentIntent.amount / 100, paymentIntent.currency.toUpperCase())}
-              </span>
-            </div>
-          </div>
+    <div className={`bg-white rounded-2xl shadow-xl overflow-hidden ${className}`}>
+      {/* Success Header */}
+      <div className="bg-green-500 py-12 text-center text-white">
+        <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+          <FaCheckCircle className="text-4xl text-white" />
         </div>
+        <h2 className="text-3xl font-bold mb-2">Payment Successful!</h2>
+        <p className="opacity-90">Thank you for your order, {orderData.items.length > 0 ? 'we are preparing it now' : ''}</p>
       </div>
 
-      {/* Order Items Summary */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Order Items
-        </h3>
-        
-        <div className="space-y-2">
-          {orderData.items.map((item, index) => (
-            <div key={index} className="flex justify-between items-center">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-12 h-12 rounded object-cover"
-                />
-                <div>
-                  <p className="font-medium text-gray-900">{item.name}</p>
-                  <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+      <div className="p-8">
+        {/* Order Details Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+              <FaReceipt className="mr-2 text-primary-500" />
+              Receipt Details
+            </h3>
+
+            <div className="space-y-3 bg-gray-50 rounded-2xl p-5 border border-gray-100">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Receipt No:</span>
+                <span className="font-bold text-gray-900">
+                  {formatOrderId(paymentIntent.reference)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Date:</span>
+                <span className="font-medium text-gray-900">
+                  {formatDate(paymentIntent.paid_at || paymentIntent.created_at)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Method:</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                  {paymentIntent.channel?.replace('_', ' ') || 'Mobile Money'}
+                </span>
+              </div>
+
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Total Paid</span>
+                  <span className="text-xl font-black text-primary-600">
+                    {formatAmount(paymentIntent.amount / 100, (paymentIntent.currency || 'GHS').toUpperCase())}
+                  </span>
                 </div>
               </div>
-              <span className="font-medium text-gray-900">
-                {formatAmount(item.price * item.quantity)}
-              </span>
             </div>
-          ))}
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">What's Next?</h3>
+            <div className="bg-primary-50 rounded-2xl p-5 border border-primary-100 h-full">
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</div>
+                  <p className="text-sm text-primary-900">
+                    <strong>Preparation</strong>: Our chef has received your order and is starting to cook.
+                  </p>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</div>
+                  <p className="text-sm text-primary-900">
+                    <strong>{orderData.deliveryType === 'delivery' ? 'Delivery' : 'Pickup'}</strong>:
+                    {orderData.deliveryType === 'delivery'
+                      ? 'A rider will pick up your order in about 15-20 minutes.'
+                      : 'We will notify you when it is ready for collection.'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 pt-4 border-t border-primary-100">
+                <p className="text-[10px] text-primary-700 uppercase font-black tracking-widest mb-1">Store Address</p>
+                <p className="text-xs text-primary-900">123 Main Street, Accra, Ghana</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Next Steps */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h3 className="text-lg font-semibold text-blue-900 mb-3">
-          What's Next?
-        </h3>
-        
-        <div className="text-left space-y-2 text-sm text-blue-800">
-          {orderData.deliveryType === 'pickup' ? (
-            <>
-              <p>• Your order is being prepared</p>
-              <p>• Estimated ready time: 15-20 minutes</p>
-              <p>• Pick up at: 123 Main Street, Accra, Ghana</p>
-              <p>• Contact: (555) 123-4567</p>
-            </>
-          ) : (
-            <>
-              <p>• Your order is being prepared</p>
-              <p>• Estimated delivery time: 20-30 minutes</p>
-              <p>• You'll receive updates via SMS/email</p>
-              <p>• Contact: (555) 123-4567 for questions</p>
-            </>
-          )}
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center border-t border-gray-100 pt-10">
+          <button
+            onClick={onNewOrder}
+            className="w-full sm:w-auto flex items-center justify-center px-10 py-4 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all font-bold shadow-lg shadow-primary-100 active:scale-95"
+          >
+            <FaShoppingCart className="mr-2" />
+            Place New Order
+          </button>
+
+          <button
+            onClick={onBackToHome}
+            className="w-full sm:w-auto flex items-center justify-center px-10 py-4 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-bold active:scale-95"
+          >
+            <FaHome className="mr-2" />
+            Go to Home
+          </button>
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <button
-          onClick={onNewOrder}
-          className="flex items-center justify-center px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
-        >
-          <FaShoppingCart className="mr-2" />
-          Place Another Order
-        </button>
-        
-        <button
-          onClick={onBackToHome}
-          className="flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-        >
-          <FaHome className="mr-2" />
-          Back to Home
-        </button>
-      </div>
-
-      {/* Additional Actions */}
-      <div className="mt-6 flex justify-center space-x-4">
-        <button className="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
-          <FaDownload className="mr-1" />
-          Download Receipt
-        </button>
-        
-        <button className="flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
-          <FaShare className="mr-1" />
-          Share Order
-        </button>
-      </div>
-
-      {/* Support Information */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <p className="text-sm text-gray-500">
-          Need help? Contact us at{' '}
-          <a href="tel:5551234567" className="text-primary-600 hover:underline">
-            (555) 123-4567
-          </a>{' '}
-          or{' '}
-          <a href="mailto:support@perlas.com" className="text-primary-600 hover:underline">
-            support@perlas.com
-          </a>
-        </p>
+        {/* Footer info */}
+        <div className="mt-10 text-center">
+          <p className="text-xs text-gray-400 mb-4">A copy of this receipt has been sent to your email</p>
+          <div className="flex items-center justify-center space-x-6">
+            <button className="text-sm font-bold text-primary-600 hover:text-primary-700 flex items-center transition-colors">
+              <FaDownload className="mr-1.5" /> Receipt
+            </button>
+            <button className="text-sm font-bold text-primary-600 hover:text-primary-700 flex items-center transition-colors">
+              <FaShare className="mr-1.5" /> Share
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
